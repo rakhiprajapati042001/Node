@@ -1,6 +1,7 @@
 const route=require("express").Router();
 const loginController=require("../Controller/signUp");
 const authMiddleware=require('../configuration/middleware/authMiddleware')
+const swaggerJsdoc = require('swagger-jsdoc');
 
 
 const multer = require("multer");
@@ -19,6 +20,22 @@ var storage = multer.diskStorage({
 
 }
 );
+
+
+const options = {
+  failOnErrors: true, // Whether or not to throw when parsing errors. Defaults to false.
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Rakhi Node Js Project',
+      version: '1.0.0',
+    },
+  },
+  apis: ['./src/routes*.js'],
+};
+
+const openapiSpecification = swaggerJsdoc(options)
+
 
 const uploads = multer({ storage: storage });
 console.log(storage+"storage");

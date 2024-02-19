@@ -4,6 +4,7 @@ const config=require('./configuration/config.js');
 const PORT=9990;
 const path=require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const { I18n }=require('i18n')
 
@@ -15,6 +16,8 @@ app.use(express.urlencoded())
 app.use(express.json())
 app.use(require('./Router/router.js'))
 
+/* URL of Swagger use
+http://localhost:9990/api-docs/ */
 
 
 const options = {
@@ -27,7 +30,7 @@ const options = {
     },
 servers:[
   {
-    api:"http://localhost:9990/"
+    url:"http://localhost:9990/"
   }
 ]
 
@@ -38,6 +41,11 @@ servers:[
 const swaggerDocument = swaggerJsdoc(options)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+
+
+
+
 
 const i18n = new I18n({
     locales: ['en', 'hi','de'],

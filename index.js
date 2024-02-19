@@ -3,6 +3,7 @@ const app = express();
 const config=require('./configuration/config.js');
 const PORT=9990;
 const path=require('path');
+const swaggerJsdoc = require('swagger-jsdoc');
 
 const { I18n }=require('i18n')
 
@@ -14,6 +15,29 @@ app.use(express.urlencoded())
 app.use(express.json())
 app.use(require('./Router/router.js'))
 
+
+
+const options = {
+  failOnErrors: true, // Whether or not to throw when parsing errors. Defaults to false.
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Rakhi Node Js Project',
+      version: '1.0.0',
+    },
+servers:[
+  {
+    api:"http://localhost:9990/"
+  }
+]
+
+  },
+  apis: ['../Router/router.js'],
+};
+
+const swaggerDocument = swaggerJsdoc(options)
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const i18n = new I18n({
     locales: ['en', 'hi','de'],

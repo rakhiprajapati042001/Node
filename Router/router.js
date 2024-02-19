@@ -22,20 +22,7 @@ var storage = multer.diskStorage({
 
 
 
-/**
- * @swagger
- * /getModule :
- *             post:
- *                  summary:this is a summary of this api
- *                  description:this is a summary of this api
- *                  response:
- *                         200:
- *                             description: to test get method
- *                      
- * 
- * 
- * 
- */
+
 
 
 const uploads = multer({ storage: storage });

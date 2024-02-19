@@ -44,7 +44,23 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 
-
+/**
+ * @swagger
+ * /:
+ *  get:
+ *       summary:this is a summary of this api
+ *       description:this is a summary of this api
+ *       response:
+ *                200:
+ *                     description: to test get method
+ *                      
+ * 
+ * 
+ * 
+ */
+app.get("/",(req,res)=>{
+  res.send("welcome in Swagger!")
+})
 
 
 const i18n = new I18n({

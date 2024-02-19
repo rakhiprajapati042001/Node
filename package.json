@@ -21,6 +21,7 @@
     "otp-generator": "^4.0.1",
     "path": "^0.12.7",
     "pdfkit": "^0.14.0",
+    "swagger-jsdoc": "^6.2.8",
     "twilio": "^4.21.0",
     "util": "^0.12.5"
   },

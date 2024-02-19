@@ -1,0 +1,33 @@
+{
+  "scripts": {
+    "start": "nodemon index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "email-validator": "^2.0.4",
+    "exceljs": "^4.4.0",
+    "express": "^4.18.2",
+    "fast-two-sms": "^3.0.0",
+    "i18n": "^0.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "md5": "^2.3.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1",
+    "node-datetime": "^2.1.2",
+    "node-modules": "^1.0.1",
+    "nodemailer": "^6.9.9",
+    "nodemon": "^3.0.3",
+    "otp-generator": "^4.0.1",
+    "path": "^0.12.7",
+    "pdfkit": "^0.14.0",
+    "twilio": "^4.21.0",
+    "util": "^0.12.5"
+  },
+  "name": "authentication",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

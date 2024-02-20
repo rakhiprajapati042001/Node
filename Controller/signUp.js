@@ -852,6 +852,103 @@ module.exports.getSubModule = async function (req, res) {
 
 }
 
+module.exports.getSubModule = async function (req, res) {
+
+
+  const statusId = req.body.statusId
+  console.log(statusId + "statusId");
+  try {
+
+    // let sql2='SELECT name  FROM module  WHERE parent_menu_id = (SELECT id FROM module WHERE name = ?)'
+    let sql2 = 'SELECT *  FROM module  WHERE status = ?'
+
+    let ress = await mysqlcon(sql2, [statusId])
+    console.log(Object.values(ress).length + "ress");
+    console.log(sql2 + "sql2");
+
+    if ((Object.values(ress).length) > 0) {
+      res.json({
+        "message": "Sub Modules Fetch Successfully!",
+        status: 200,
+        "data": ress
+      })
+    } else {
+      res.json({
+        "message": "Something went wrong to fetch sub modules",
+        status: 401
+      })
+    }
+
+  } catch (err) {
+    console.log(err),
+      res.json({
+        "message": "Something Went Wrong!",
+        status: 201
+      })
+  }
+
+}
+
+module.exports.example = async function (req, res) {
+
+  try {
+
+    // let sql2='SELECT name  FROM module  WHERE parent_menu_id = (SELECT id FROM module WHERE name = ?)'
+   res.send("Send Succesfully")
+
+
+  
+
+  } catch (err) {
+    console.log(err),
+      res.json({
+        "message": "Something Went Wrong!",
+        status: 201
+      })
+  }
+
+}
+
+
+module.exports.get_menu = async (req, res) => {
+  try {
+      const sql = "SELECT * FROM module WHERE parent_menu_id = 0";
+      const details = await mysqlcon(sql);
+
+      let data1 = [];
+
+      for(i = 0;i<details.length;i++){
+              // console.log(details[i].id);
+              // console.log(details[i].name);
+      }
+  
+      for (let num = 0; num < details.length; num++) {
+          const submenuSql = `SELECT id,name FROM module WHERE parent_menu_id = ${details[num].id}`;
+          const submenus = await mysqlcon(submenuSql);
+          let data2=[]
+
+          submenus.forEach(submenu => {
+              data2.push({
+                  id:submenu.id,
+                  name:submenu.name
+              });
+          });
+
+          data1.push({
+              id: details[num].id,
+              name: details[num].name,
+             subdata: data2
+
+          });
+    
+      }
+     
+      return res.status(200).json({ data1 });
+  } catch (err) {
+      console.log(err);
+      return res.status(404).json({ message: err });
+  }
+};
 
 
 

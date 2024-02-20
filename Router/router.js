@@ -24,11 +24,32 @@ var storage = multer.diskStorage({
 
 
 
-
 const uploads = multer({ storage: storage });
-console.log(storage+"storage");
 
-console.log(uploads+"uploads");
+
+
+
+/**
+ * @swagger
+ *   component:
+ *   schemas:
+ *    
+ */
+
+
+/**
+ * @swagger
+ * /rout/example:
+ *            get:     
+ *               responses:
+ *                       200:
+ *                       description: Successful response
+ *                       content:
+ *                               application/json:
+ * 
+ */
+
+
 route.post("/signUP", loginController.signUP);
 route.post("/login", loginController.login);
 
@@ -47,6 +68,9 @@ route.post("/getSubModule", loginController.getSubModule);
 route.post("/excelExport", loginController.excelExport);
 
 route.post("/pdfDownload", loginController.pdfDownload);
+route.get("/example", loginController.example);
+
+route.post("/get_menu", loginController.get_menu);
 
 
 

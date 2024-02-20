@@ -852,43 +852,6 @@ module.exports.getSubModule = async function (req, res) {
 
 }
 
-module.exports.getSubModule = async function (req, res) {
-
-
-  const statusId = req.body.statusId
-  console.log(statusId + "statusId");
-  try {
-
-    // let sql2='SELECT name  FROM module  WHERE parent_menu_id = (SELECT id FROM module WHERE name = ?)'
-    let sql2 = 'SELECT *  FROM module  WHERE status = ?'
-
-    let ress = await mysqlcon(sql2, [statusId])
-    console.log(Object.values(ress).length + "ress");
-    console.log(sql2 + "sql2");
-
-    if ((Object.values(ress).length) > 0) {
-      res.json({
-        "message": "Sub Modules Fetch Successfully!",
-        status: 200,
-        "data": ress
-      })
-    } else {
-      res.json({
-        "message": "Something went wrong to fetch sub modules",
-        status: 401
-      })
-    }
-
-  } catch (err) {
-    console.log(err),
-      res.json({
-        "message": "Something Went Wrong!",
-        status: 201
-      })
-  }
-
-}
-
 module.exports.example = async function (req, res) {
 
   try {

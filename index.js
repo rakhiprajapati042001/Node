@@ -3,7 +3,7 @@ const router=require("express").Router();
 
 const app = express();
 const config=require('./configuration/config.js');
-const PORT=9990;
+const PORT= process.env.PORT ||9990;
 const path=require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -20,22 +20,28 @@ http://localhost:9990/api-docs/ */
 
 
 const options = {
-  // failOnErrors: true, // Whether or not to throw when parsing errors. Defaults to false.
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Rakhi Node Js Project',
-      version: '1.0.0',
-      description:"A simple api"
+      title: "Library API",
+      version: "1.0.0",
+      description: "A simple Express Library API",
+      termsOfService: "http://example.com/terms/",
+      contact: {
+        name: "API Support",
+        url: "http://www.exmaple.com/support",
+        email: "support@example.com",
+      },
     },
-servers:[
-  {
-    url:"http://localhost:9990"
-  }
-]
 
+    servers: [
+      {
+        url: "http://localhost:9990",
+        description: "My API Documentation",
+      },
+    ],
   },
-  apis: ['./Router/router.js'],
+  apis: ["./Router/*.js"],
 };
 
 const swaggerDocument = swaggerJsdoc(options)

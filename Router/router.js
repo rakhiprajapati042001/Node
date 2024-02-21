@@ -29,36 +29,60 @@ const uploads = multer({ storage: storage });
 
 
 /**
- * 
-*components:
-*     schemas:
-*          ExampleResponse:
-*            type: object
-*            properties:
-*                 message:
-*                     type: string
-*                     description: Message indicating the success of the request.
-*          example:
-*               message: Send Successfully
-*/
+ * @swagger
+ * components:
+ *   schemas:
+ *     ExampleResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: Message indicating the success of the request.
+ *       example:
+ *         message: Send Successfully
+ */
+
+/**
+ * @swagger
+ * /example:
+ *   get:
+ *     summary: Retrieve example data
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ExampleResponse'
+ */
+route.get("/example", loginController.example);
 
 
 
 /**
  * @swagger
- * /example:
- *            get:     
- *               responses:
- *                       200:
- *                       description: Successful response
- *                       content:
- *                               application/json:
- *                               schema:
- *                                    $ref: '#/components/schemas/ExampleResponse'     
+ * components:
+ *   schemas:
+ *     signUPResponse:
+ *         parameters:
+  
+ * 
+ * 
+ * */
+
+/**
+ * @swagger
+ * /signUP:
+ *   post:
+ *     summary: Retrieve example data
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/signUPResponse'
  */
-
-route.get("/example", loginController.example);
-
 route.post("/signUP", loginController.signUP);
 route.post("/login", loginController.login);
 

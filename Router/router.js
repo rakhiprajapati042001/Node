@@ -28,27 +28,36 @@ const uploads = multer({ storage: storage });
 
 
 
+/**
+ * 
+*components:
+*     schemas:
+*          ExampleResponse:
+*            type: object
+*            properties:
+*                 message:
+*                     type: string
+*                     description: Message indicating the success of the request.
+*          example:
+*               message: Send Successfully
+*/
+
+
 
 /**
  * @swagger
- *   component:
- *   schemas:
- *    
- */
-
-
-/**
- * @swagger
- * /rout/example:
+ * /example:
  *            get:     
  *               responses:
  *                       200:
  *                       description: Successful response
  *                       content:
  *                               application/json:
- * 
+ *                               schema:
+ *                                    $ref: '#/components/schemas/ExampleResponse'     
  */
 
+route.get("/example", loginController.example);
 
 route.post("/signUP", loginController.signUP);
 route.post("/login", loginController.login);
@@ -68,7 +77,6 @@ route.post("/getSubModule", loginController.getSubModule);
 route.post("/excelExport", loginController.excelExport);
 
 route.post("/pdfDownload", loginController.pdfDownload);
-route.get("/example", loginController.example);
 
 route.post("/get_menu", loginController.get_menu);
 

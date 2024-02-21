@@ -7,7 +7,7 @@ const PORT=9990;
 const path=require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const rout=require('./Router/router.js')
+// const rout=require('./Router/router.js')
 const { I18n }=require('i18n')
 
 app.use(express.urlencoded())
@@ -41,7 +41,7 @@ servers:[
 const swaggerDocument = swaggerJsdoc(options)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/rout',rout)
+// app.use('/route',router)
 // router.use('/api-docs', swaggerUi.serve);
 // router.get('/api-docs', swaggerUi.setup(swaggerDocument));
 

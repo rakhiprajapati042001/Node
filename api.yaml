@@ -1,0 +1,35 @@
+# swagger: "2.0"
+# info:
+#   title: Youtube API
+#   description: This is my company API Documentation
+#   version: 1.0
+#   contact:
+#     email: rakhiprajapati042001@gmail.com
+#   liscence:
+#     name: Apache 2.0
+#     url: "http://www.apache.org/liscences/LIS"
+#   servers:
+#     -url: http://localhost:9990
+#     description: THis is my local Server
+#     -url: http://example.com/
+#     description: This is my original URL
+# schemes: [https,http]
+
+
+# #Return Users From get request
+# paths:
+#   /example:
+#     get:
+#       summary: Returns a string.
+#       description: String Chechup
+#       responses:
+#         200:    # status code
+#           description: Successul Response
+#           schema: 
+#             type: string
+#             example: "Users String"
+#         400:
+#           description: User Error
+#           schema: 
+#             type: string
+#             example: "Some Error "

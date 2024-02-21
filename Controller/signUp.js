@@ -24,6 +24,7 @@ dotenv.config();
 module.exports.excelExport = async function (req, res) {
 
   try {
+
     const workbook = new Excel.Workbook();
     const worksheet = workbook.addWorksheet('Countries List');
 
@@ -857,7 +858,7 @@ module.exports.example = async function (req, res) {
   try {
 
     // let sql2='SELECT name  FROM module  WHERE parent_menu_id = (SELECT id FROM module WHERE name = ?)'
-   res.send("Send Succesfully")
+   res.send("example Succesfully")
 
 
   
@@ -886,20 +887,25 @@ module.exports.get_menu = async (req, res) => {
       }
   
       for (let num = 0; num < details.length; num++) {
-          const submenuSql = `SELECT id,name FROM module WHERE parent_menu_id = ${details[num].id}`;
+          const submenuSql = `SELECT id,name,image,description FROM module WHERE parent_menu_id = ${details[num].id}`;
           const submenus = await mysqlcon(submenuSql);
           let data2=[]
 
           submenus.forEach(submenu => {
               data2.push({
                   id:submenu.id,
-                  name:submenu.name
+                  name:submenu.name,
+                  description:submenu.description,
+                  image:submenu.image
               });
           });
 
           data1.push({
               id: details[num].id,
               name: details[num].name,
+              description:details[num].description,
+              images:details[num].image,
+
              subdata: data2
 
           });

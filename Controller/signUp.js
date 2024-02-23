@@ -922,3 +922,84 @@ module.exports.get_menu = async (req, res) => {
 
 
 
+
+
+
+
+/*another project work apies
+
+module.exports.amount=async (req,res)=>{
+try{
+     const sql = "SELECT ROUND (SUM(ammount),2) AS total_ammount FROM tbl_merchant_transaction WHERE status = 1  AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+     const deposite = await mysqlcon(sql);
+
+    const sql1 = "SELECT ROUND (SUM(amount),2) AS total_ammount FROM tbl_icici_payout_transaction_response_details WHERE status = 'success' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+    const payout = await mysqlcon(sql1);
+
+    const sql2 = "SELECT ROUND (SUM(ammount),2) AS total_ammount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+    const Commision = await mysqlcon(sql2);
+
+    const sql3 = "SELECT ROUND (SUM(requestedAmount),2) AS total_ammount FROM tbl_settlement WHERE status = 'success' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+    const settlement = await mysqlcon(sql3);
+
+if(settlement){
+    return res.status(200).json({ 
+        "message":"Amount fetch Successfully!",
+        "deposite":deposite,
+          "payout":payout,
+         "Commision":Commision,
+        "settlement":settlement });
+}else{
+    res.status(201).json({
+        status: false,
+        message: "something Wroong!",
+       
+})
+}
+
+
+}catch(error){
+    console.log(error);
+    return res.status(404).json({ message: error });
+}
+}
+
+module.exports.calulatePercentage=async function(req,res){
+    try{
+ 
+const sql="SELECT  (COUNT(CASE WHEN status = 0 THEN 1 END) / COUNT(*)) * 100 AS failure_percentage FROM  tbl_merchant_transaction;"
+const failureRate = await mysqlcon(sql);
+
+const sql1="SELECT  (COUNT(CASE WHEN status = 1 THEN 1 END) / COUNT(*)) * 100 AS success_percentage FROM  tbl_merchant_transaction;"
+const success = await mysqlcon(sql1);
+
+const sql2="SELECT  (COUNT(CASE WHEN status = 3 THEN 1 END) / COUNT(*)) * 100 AS pending_percentage FROM  tbl_merchant_transaction;"
+const pending = await mysqlcon(sql2);
+
+const totalCount= ` SELECT (SELECT COUNT(*) FROM tbl_merchant_transaction) AS merchant_transaction_count`;
+ const result = await mysqlcon(totalCount);
+
+ let totalCounts=result[0].merchant_transaction_count;
+let pendings= pending[0].pending_percentage;
+let successe=success[0].success_percentage
+let fail=failureRate[0].failure_percentage
+console.log(result[0].merchant_transaction_count);
+if(failureRate){
+    return res.status(200).json({ 
+        "message":"Amount fetch Successfully!",
+        "table_name":"tbl_merchant_transaction",
+        "failureRate":fail,
+        "success":successe,
+        "pending":pendings,
+        "totalCount":totalCounts
+
+          });
+       }
+
+
+    }catch(error){
+        console.log(error);
+        return res.status(404).json({ message: error });
+    }
+}
+**/

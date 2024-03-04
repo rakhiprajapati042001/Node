@@ -25,7 +25,7 @@ var storage = multer.diskStorage({
 
 
 const uploads = multer({ storage: storage });
-
+const upload = multer({ dest: 'uploads/' });
 
 
 /**
@@ -55,34 +55,51 @@ const uploads = multer({ storage: storage });
  *             schema:
  *               $ref: '#/components/schemas/ExampleResponse'
  */
+
 route.get("/example", loginController.example);
 
 
 
+
 /**
- * @swagger
  * components:
- *   schemas:
+ *   schema:
  *     signUPResponse:
- *         parameters:
-  
+ *         type: object
+ *          properties:
+ *                 userName:
+ *                      type:string
+ *                  userEmail:
+ *                        type:string
+ *                  password:
+ *                        type:string
+ *                  confirmPassword:
+ *                        type:string
+ *                   
+ *
  * 
  * 
  * */
+
+
 
 /**
  * @swagger
  * /signUP:
  *   post:
- *     summary: Retrieve example data
+ *     summary: this api for signup user
  *     responses:
  *       '200':
- *         description: Successful response
+ *         description: Successful signUp
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/signUPResponse'
+ *                  items.$ref: '#/components/schema/signUPResponse'
  */
+
+
+
+
 route.post("/signUP", loginController.signUP);
 route.post("/login", loginController.login);
 
@@ -103,6 +120,7 @@ route.post("/excelExport", loginController.excelExport);
 route.post("/pdfDownload", loginController.pdfDownload);
 
 route.post("/get_menu", loginController.get_menu);
+route.post("/import_Excel_Sheet", upload.single('excel'),loginController.importExcelSheet);
 
 
 

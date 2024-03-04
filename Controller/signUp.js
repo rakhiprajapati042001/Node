@@ -17,7 +17,7 @@ const path = require('path');
 const Excel = require('exceljs');
 const pdfDoc = require('pdfkit');
 const fs = require('fs');
-
+const xlsx = require('xlsx');
 
 dotenv.config();
 
@@ -1003,3 +1003,44 @@ if(failureRate){
     }
 }
 **/
+
+
+
+module.exports.importExcelSheet=async (req,res)=>{
+
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+
+
+  const workbook = xlsx.readFile(req.file.path);
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  console.log(Object.values(worksheet)+"worksheet");
+  const data = xlsx.utils.sheet_to_json(worksheet);
+  console.log(data+"dara");
+  // Insert data into the database
+  data.forEach(row => {
+
+
+    // Handle blank values and set default values
+  const name = row.name || ''; // If name is blank, set it to an empty string
+  const parent_menu_id = row.parent_menu_id || 0; // If parent_menu_id is blank, set it to 0
+  const status = row.status == '' ? null : row.status;
+    console.log(row+"youuuu");
+    const sql = 'INSERT INTO module (name, parent_menu_id, status) VALUES (?, ?, ?)'; // Modify as per your table structure
+    const values = [name, parent_menu_id, status]; // Adjust according to your Excel columns
+
+     mysqlcon(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error inserting data:', err);
+        return;
+      }
+      console.log('Data inserted successfully:', result);
+    });
+  });
+
+  // Respond to the client
+  res.send('Data uploaded and inserted into the database.');
+
+
+}

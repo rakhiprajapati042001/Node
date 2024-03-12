@@ -122,6 +122,11 @@ route.post("/pdfDownload", loginController.pdfDownload);
 route.post("/get_menu", loginController.get_menu);
 route.post("/import_Excel_Sheet", upload.single('excel'),loginController.importExcelSheet);
 
+route.post("/vendors", loginController.vendors);
+route.post("/vendorConnection", loginController.vendorConnection);
+
+
+
 
 
 

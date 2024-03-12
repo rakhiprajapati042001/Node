@@ -1044,3 +1044,87 @@ module.exports.importExcelSheet=async (req,res)=>{
 
 
 }
+
+
+//bank connect database run for vendors 
+module.exports.vendors=async (req,res)=>{
+
+  try{
+  
+  
+      const sql1 =  `SELECT 
+      FORMAT(SUM(CASE WHEN tbl_merchant_transaction.status = 1 THEN tbl_merchant_transaction.ammount ELSE 0 END), 2) AS Total_Amount, 
+      payment_gateway.gateway_name 
+  FROM 
+      tbl_merchant_transaction 
+  JOIN 
+      payment_gateway ON tbl_merchant_transaction.gatewayNumber = payment_gateway.id 
+  WHERE 
+      tbl_merchant_transaction.created_on >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH) 
+  GROUP BY 
+      tbl_merchant_transaction.gatewayNumber 
+  ORDER BY 
+      Total_Amount DESC 
+  LIMIT 
+      10`
+      const deposit = await mysqlcon(sql1);
+  
+      console.log(deposit);
+      const sql2 = `SELECT FORMAT(  SUM(CASE WHEN tbl_icici_payout_transaction_response_details.status = "SUCCESS" THEN  tbl_icici_payout_transaction_response_details.amount ELSE 0 END),2) As Total_Amount FROM tbl_icici_payout_transaction_response_details WHERE created_on >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH) GROUP By amount ORDER BY Total_Amount DESC LIMIT 10`;
+      const payout = await mysqlcon(sql2);
+     
+      if (deposit && payout ) {
+          return res.status(200).json({
+              message: "Data Fetched Successfully",
+              Deposite: deposit,
+              Payout:payout
+             
+          });
+  
+      } else{
+          return res.status(400).json({
+              "message": "Error while fetching data"
+          })
+      
+      }
+  
+  }catch(err){
+      console.log(err);
+      return res.status(201).json({ error: err }); 
+  }
+  
+  
+  
+}  
+
+
+
+module.exports.vendorConnection = async function(req,res) {
+  try{
+    let sqlquery = `SELECT ROUND(SUM(ammount)) AS total_amount,payment_gateway.gateway_name FROM tbl_merchant_transaction LEFT JOIN payment_gateway ON tbl_merchant_transaction.gatewayNumber = payment_gateway.id WHERE tbl_merchant_transaction.status = 1 AND tbl_merchant_transaction.created_on >= NOW() - INTERVAL 6 MONTH GROUP BY tbl_merchant_transaction.gatewayNumber LIMIT 10`;
+    
+    const result = await mysqlcon(sqlquery);
+
+    let allTotalAmounts = '';
+    let allGatewayName  = '';
+    for (let i = 0; i < result.length; i++) {
+      allTotalAmounts += result[i].total_amount + ', ';
+    }
+    for(let j = 0;j<result.length; j++){
+      allGatewayName += result[j].gateway_name+', '
+    }
+
+  //   console.log(allTotalAmounts);
+  //   console.log(allGatewayName);
+    
+    if(result){
+      return res.status(200).json({ message:'Top 10 vendors Data fetched successfully',
+      DEPOSITE_AMOUNT:allTotalAmounts,GATEWAY_NAME:allGatewayName})
+    }
+    else{
+      return res.status(201).json({ message:'Unable to fetch data'})
+    }
+  }catch(err){
+      return res.status(404).json({ err:'Error occured'+err})
+  }
+}  

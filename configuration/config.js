@@ -3,7 +3,7 @@ const config = {
     DB_PORT: "3307",
     DB_USERNAME: "root",
     DB_PASSWORD: "",
-    DB_NAME: "ubankconnect",
+    DB_NAME: "ubankconnectd",
   
     // JWT DATA
     JWT_EXPIRY_TIME: "1h",

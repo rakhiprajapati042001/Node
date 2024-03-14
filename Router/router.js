@@ -124,6 +124,15 @@ route.post("/import_Excel_Sheet", upload.single('excel'),loginController.importE
 
 route.post("/vendors", loginController.vendors);
 route.post("/vendorConnection", loginController.vendorConnection);
+route.post("/csv",upload.single('excel'),loginController.csv);
+
+route.post("/csvs",upload.single('excel'),loginController.csvs);
+
+
+route.post("/upload_excel",upload.single('excel'),loginController.upload_excel);
+
+route.post("/getTableColumns", loginController.getTableColumns);
+
 
 
 

@@ -9,8 +9,6 @@ const transpoter=mail.createTransport({
     }
 })
 
-
-
 module.exports.sendEmail=async function(userMail,otp,res)
 {
 

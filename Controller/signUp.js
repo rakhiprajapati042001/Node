@@ -1128,3 +1128,193 @@ module.exports.vendorConnection = async function(req,res) {
       return res.status(404).json({ err:'Error occured'+err})
   }
 }  
+
+
+
+module.exports.csv=async (req,res)=>{
+
+ try{
+
+  
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  const workbook = xlsx.readFile(req.file.path);
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  console.log(Object.values(worksheet)+"worksheet");
+  const data = xlsx.utils.sheet_to_json(worksheet);
+  // Insert data into the database
+  data.forEach(row => {
+
+console.log(row.akontocode);
+    const sql = 'INSERT INTO tbl_code (type, title,status,code,akontocode,payment_gate,bank_services_charge) VALUES (?,?,?,?,?,?,?)'; // Modify as per your table structure
+    const values = [row.type,row.title,row.status,row.code,row.akontocode,row.payment_gate,row.bank_services_charge]; // Adjust according to your Excel columns
+    console.log(row.akontocode);
+
+    mysqlcon(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error inserting data:', err);
+        return;
+      }
+      console.log('Data inserted successfully:', result);
+    });
+
+     const sql2 = 'INSERT INTO tbl_akonto_banks_code(type, title, status,code,currencies) VALUES (?, ?, ?,?,?)'; // Modify as per your table structure
+    const values2 = [row.type,row.title, row.status,row.code,row.akontocode,row.payment_gate,row.bank_services_charge]; // Adjust according to your Excel columns
+     mysqlcon(sql2, values2, (err, result) => {
+      if (err) {
+        console.error('Error inserting data:', err);
+        return;
+      }
+      console.log('Data inserted successfully:', result);
+    });
+   });
+
+  // Respond to the client
+  res.send('Data uploaded and inserted into the database.');
+ }catch(err)
+ {
+  console.log(err);
+      return res.status(201).json({ error: err }); 
+ }
+
+}
+
+
+module.exports.csvs = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+
+    const workbook = xlsx.readFile(req.file.path);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = xlsx.utils.sheet_to_json(worksheet);
+
+    // Iterate through each row of data
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      
+      // Perform insertion into the first table (tbl_code)
+
+
+      const sql1 = 'INSERT INTO tbl_code (type, title, status, code, akontocode, payment_gate, bank_services_charge) VALUES (?, ?, ?, ?, ?, ?, ?)';
+      
+      const values1 = [row.type, row.title, row.status, row.code, row.akontocode, row.payment_gate, row.bank_services_charge];
+      await mysqlcon(sql1, values1);
+
+
+     
+
+
+      // Perform insertion into the second table (tbl_akonto_banks_code)
+      const sql2 = 'INSERT INTO tbl_akonto_banks_code (type, title, status, code, currencies) VALUES (?, ?, ?, ?, ?)';
+      const values2 = [row.type, row.title, row.status, row.code, row.currencies];
+      await mysqlcon(sql2, values2);
+    }
+
+    // Respond to the client
+    res.send('Data uploaded and inserted into the database.');
+  } catch (err) {
+    console.log(err);
+    return res.status(201).json({ error: err });
+  }
+}
+
+
+// ````````````````````````````````````````````````````````````````````````````
+module.exports.upload_excel = async function (req, res) {
+  try {
+    // uploads.single('csvexcelFile')(req, res, async function (err) {
+    //   if (err) {
+    //     console.error('Error handling file upload:', err);
+    //     return res.status(500).json({
+    //       message: 'File upload error',
+    //       error: err,
+    //     });
+      
+
+      if (!req.file) {
+        console.error('Error handling file upload: No file uploaded');
+        return res.status(400).json({
+          message: 'No file uploaded',
+        });
+      }
+
+      
+      const workbook = xlsx.readFile(req.file.path);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+      // const workbook = new xlsx.Workbook();
+      // await workbook.xlsx.load(req.file.buffer);
+      // const worksheet = workbook.worksheets[0];
+
+      const columns = worksheet.getRow(1).values.filter(column => column !== null);
+      // res.send(columns)
+      
+      const allData = [];
+
+      for (let i = 2; i <= worksheet.rowCount; i++) {
+        const row = worksheet.getRow(i).values.filter(column => column !== null);;
+        res.send(row)
+      
+        const rowData = {};
+        columns.forEach((column, index) => {
+          rowData[column] = row[index];
+        });
+
+        allData.push(rowData);
+      }
+
+      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code'];
+
+      await Promise.all(tablesToInsert.map(async (tableName) => {
+        const existingColumns = await getTableColumns(tableName);
+
+        const tableColumns = columns.filter(column => existingColumns.includes(column));
+
+        if (tableColumns.length > 0) {
+          const sql = `INSERT INTO ${tableName} (${tableColumns.join(', ')}) VALUES ?`;
+
+          // Map the data for each column and insert as a single row
+          const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
+
+          await mysqlcon(sql, [values]);
+        }
+      }));
+
+      res.send('File uploaded and data inserted into the database.');
+    }
+  catch (error) {
+    console.error('Error handling file upload:', error);
+    res.status(500).json({
+      message: 'Server Error',
+      error,
+    });
+  }
+
+}
+
+
+module.exports.getTableColumns = async function (req, res) {
+  try {
+    let tableName = req.tableName;
+    console.log(tableName + "tableName");
+    const query = `SHOW COLUMNS FROM ${tableName}`;
+    const columns = await mysqlcon(query);
+
+    // Extract column names from the result
+    const columnNames = columns.map(column => column.Field);
+
+    console.log(columnNames + "columnNames");
+
+    // Send the column names as a response
+    res.status(200).json({ columns: columnNames });
+  } catch (err) {
+    console.error('Error fetching table columns:', err);
+    res.status(500).json({
+      message: 'Server Error',
+      error: err
+    });
+  }
+}

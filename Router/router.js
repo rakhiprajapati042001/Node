@@ -129,9 +129,10 @@ route.post("/csv",upload.single('excel'),loginController.csv);
 route.post("/csvs",upload.single('excel'),loginController.csvs);
 
 
-route.post("/upload_excel",upload.single('excel'),loginController.upload_excel);
+// route.post("/csvExcelImport",upload.single('excel'),loginController.csvExcelImport);
 
 route.post("/getTableColumns", loginController.getTableColumns);
+route.post("/csvExcelImport",loginController.csvExcelImport);
 
 
 

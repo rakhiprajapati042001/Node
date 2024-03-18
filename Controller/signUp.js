@@ -18,8 +18,14 @@ const Excel = require('exceljs');
 const pdfDoc = require('pdfkit');
 const fs = require('fs');
 const xlsx = require('xlsx');
+const multer = require("multer");
+const { log } = require('console');
+
 
 dotenv.config();
+
+const storage = multer.memoryStorage();
+const uploads = multer({ storage: storage });
 
 module.exports.excelExport = async function (req, res) {
 
@@ -858,6 +864,9 @@ module.exports.example = async function (req, res) {
   try {
 
     // let sql2='SELECT name  FROM module  WHERE parent_menu_id = (SELECT id FROM module WHERE name = ?)'
+    let tbl="tbl_code";
+   let result= getTableColumns(tbl)
+   console.log(result);
    res.send("example Succesfully")
 
 
@@ -1318,3 +1327,148 @@ module.exports.getTableColumns = async function (req, res) {
     });
   }
 }
+
+
+module.exports.csvExcelImport=async function(req,res){
+
+
+  try {
+      
+
+      if (!req.file) {
+        console.error('Error handling file upload: No file uploaded');
+        return res.status(400).json({
+          message: 'No file uploaded',
+        });
+      }
+
+      // const workbook = new Excel.Workbook();
+      // await workbook.xlsx.load(req.file.path);
+      // const worksheet = workbook.worksheets[0];
+
+      const workbook = xlsx.readFile(req.file.path);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      // const data = xlsx.utils.sheet_to_json(worksheet);
+    
+      console.log("Worksheet keys:", Object.keys(worksheet));
+
+      
+      
+      const columns = worksheet.getRow(1).values.filter(column => column !== null);
+
+      const allData = [];
+      console.log("columns"+columns)
+
+
+    }catch(err){
+      console.error('Error fetching table columns:', err);
+      res.status(500).json({
+        message: 'Server Error',
+        error: err
+      });
+    }
+
+}
+
+
+async function getTableColumns(tableName) {
+  return new Promise((resolve, reject) => {
+    const sql = `SHOW COLUMNS FROM ${tableName}`;
+    mysqlcon(sql, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+      console.log(results.Field+"result.Field")
+        const columns = results.map(result => result.Field);
+        console.log(columns+"columns")
+        resolve(columns);
+      }
+    });
+  });
+}
+
+
+module.exports.csvExcelImport = async function (req, res) {
+  try {
+
+
+    uploads.single('csvexcelFile')(req, res, async function (err) {
+      if (err) {
+        console.error('Error handling file upload:', err);
+        return res.status(500).json({
+          message: 'File upload error',
+          error: err,
+        });
+      }
+
+      if (!req.file) {
+        console.error('Error handling file upload: No file uploaded');
+        return res.status(400).json({
+          message: 'No file uploaded',
+        });
+      }
+      console.log("req.file"+req.file)
+
+      const workbook = new Excel.Workbook();
+      await workbook.xlsx.load(req.file.buffer);
+      const worksheet = workbook.worksheets[0];
+
+      console.log(worksheet.getRow(1).values+"worksheet")
+      const columns = worksheet.getRow(1).values.filter(column => column !== null);
+      // res.send(columns)
+      console.log(columns+"columns");
+      const allData = [];
+        console.log(worksheet.rowCount+"worksheet.rowCount");
+      for (let i = 2; i <= worksheet.rowCount; i++) {
+        const row = worksheet.getRow(i).values.filter(column => column !== null);
+
+        console.log(row+"row");
+        // res.send(row)
+      
+        const rowData = {};
+
+        columns.forEach((column, index) => {
+          console.log(column+"column");
+          console.log(index+"index");
+          rowData[column] = row[index];
+        });
+console.log(Object.values(rowData)+"rowData");
+
+        allData.push(rowData);
+
+        console.log(Object.values(allData)+"allData");
+            }
+            console.log("jljkk");
+
+      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code'];
+      await Promise.all(tablesToInsert.map(async (tableName) => {
+        const existingColumns = await getTableColumns(tableName);
+console.log(existingColumns+"existingColumns");
+        const tableColumns = columns.filter(column => existingColumns.includes(column));
+
+   console.log(tableColumns+"tableColumns");
+
+        if (tableColumns.length > 0) {
+          const sql = `INSERT INTO ${tableName} (${tableColumns.join(', ')}) VALUES ?`;
+console.log(sql+"sql");
+          // Map the data for each column and insert as a single row
+
+          // console.log(Object.values(Object.values(allData))+"allData");
+          // console.log(rowData[column]+"rowData[column]");
+
+          const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
+console.log(values+"values");
+          await mysqlcon(sql, [values]);
+        }
+      }));
+
+      res.send('File uploaded and data inserted into the database.');
+    });
+  } catch (error) {
+    console.error('Error handling file upload:', error);
+    res.status(500).json({
+      message: 'Server Error',
+      error,
+    });
+  }
+};

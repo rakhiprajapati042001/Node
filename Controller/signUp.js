@@ -1479,23 +1479,23 @@ console.log(columns+"----columns")
           console.log(sql+"sql");
 
           
-if (tableName === 'tbl_merchant_assign') {
-  // Map the values from akontcode to a_code and code to b_code
-  console.log(newdata['akontocode']+"newdata['akontocode']")
-  console.log( newdata['code']+" newdata['code']")
-  newdata['a_code'] = newdata['akontocode']; // Assuming akontcode is a column name
-  newdata['b_code'] = newdata['code']; // Assuming code is a column name
+// if (tableName === 'tbl_merchant_assign') {
+//   // Map the values from akontcode to a_code and code to b_code
+//   console.log(newdata['akontocode']+"newdata['akontocode']")
+//   console.log( newdata['code']+" newdata['code']")
+//   newdata['a_code'] = newdata['akontocode']; // Assuming akontcode is a column name
+//   newdata['b_code'] = newdata['code']; // Assuming code is a column name
 
   
-  const values = allData.map(rowData => tableColumns.map(column => newdata[column]));
-  console.log(values+"values");
-            await mysqlcon(sql, [values]);
-}
-else{
+//   const values = allData.map(rowData => tableColumns.map(column => newdata[column]));
+//   console.log(values+"values");
+//             await mysqlcon(sql, [values]);
+// }
+
           const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
 console.log(values+"values");
           await mysqlcon(sql, [values]);
-        }
+        
       }
       }));
 

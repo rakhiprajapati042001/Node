@@ -1342,10 +1342,6 @@ module.exports.csvExcelImport=async function(req,res){
         });
       }
 
-      // const workbook = new Excel.Workbook();
-      // await workbook.xlsx.load(req.file.path);
-      // const worksheet = workbook.worksheets[0];
-
       const workbook = xlsx.readFile(req.file.path);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       // const data = xlsx.utils.sheet_to_json(worksheet);
@@ -1414,52 +1410,93 @@ module.exports.csvExcelImport = async function (req, res) {
       const worksheet = workbook.worksheets[0];
 
       console.log(worksheet.getRow(1).values+"worksheet")
-      const columns = worksheet.getRow(1).values.filter(column => column !== null);
+      let columns = worksheet.getRow(1).values.filter(column => column !== null);
       // res.send(columns)
-      console.log(columns+"columns");
+      console.log(columns+"columns00000000000000000000000000");
       const allData = [];
+     var newdata;
         console.log(worksheet.rowCount+"worksheet.rowCount");
       for (let i = 2; i <= worksheet.rowCount; i++) {
         const row = worksheet.getRow(i).values.filter(column => column !== null);
-
-        console.log(row+"row");
+        var rowData = {};
+        console.log(row+"row888888888888888");   
         // res.send(row)
-      
-        const rowData = {};
+        console.log(columns+"columnsiii")
 
         columns.forEach((column, index) => {
           console.log(column+"column");
           console.log(index+"index");
           rowData[column] = row[index];
+         let bbb= rowData[column]
+         console.log(bbb+"bbb")
         });
+
+       newdata=rowData;
+       console.log(Object.values(newdata)+"newdata")
 console.log(Object.values(rowData)+"rowData");
 
         allData.push(rowData);
+
 
         console.log(Object.values(allData)+"allData");
             }
             console.log("jljkk");
 
-      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code'];
+      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code','tbl_merchant_assign'];
       await Promise.all(tablesToInsert.map(async (tableName) => {
         const existingColumns = await getTableColumns(tableName);
+        console.log(tableName+"tableName")
 console.log(existingColumns+"existingColumns");
+
+if(tableName==='tbl_merchant_assign'){
+  console.log("start---------------------------")
+
+const addd = {
+  'type':'type',
+  'b_code': 'code',
+  'a_code': 'akontcode',  
+  'mer_no':'mer_no',
+  'status':'status'
+
+};
+  columns = Object.keys(addd).map(key => key);
+ console.log(columns+"--columns")
+
+}
+
+console.log(columns+"----columns")
+
+
+
         const tableColumns = columns.filter(column => existingColumns.includes(column));
 
    console.log(tableColumns+"tableColumns");
 
         if (tableColumns.length > 0) {
           const sql = `INSERT INTO ${tableName} (${tableColumns.join(', ')}) VALUES ?`;
-console.log(sql+"sql");
-          // Map the data for each column and insert as a single row
 
-          // console.log(Object.values(Object.values(allData))+"allData");
-          // console.log(rowData[column]+"rowData[column]");
 
+          console.log(sql+"sql");
+
+          
+if (tableName === 'tbl_merchant_assign') {
+  // Map the values from akontcode to a_code and code to b_code
+  console.log(newdata['akontocode']+"newdata['akontocode']")
+  console.log( newdata['code']+" newdata['code']")
+  newdata['a_code'] = newdata['akontocode']; // Assuming akontcode is a column name
+  newdata['b_code'] = newdata['code']; // Assuming code is a column name
+
+  
+  const values = allData.map(rowData => tableColumns.map(column => newdata[column]));
+  console.log(values+"values");
+            await mysqlcon(sql, [values]);
+}
+else{
           const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
 console.log(values+"values");
           await mysqlcon(sql, [values]);
         }
+      }
       }));
 
       res.send('File uploaded and data inserted into the database.');
@@ -1472,3 +1509,76 @@ console.log(values+"values");
     });
   }
 };
+
+
+// ```````````````````````````````````````````````
+
+
+module.exports.updateProfile = async function (req, res) {
+
+// updateProfile: async function (req, res) {
+
+  try {
+      var request = req.body;
+
+      const img = req.file;
+      console.log(img.originalname+"img.originalname")
+
+      console.log(req.user)
+      console.log(request);
+      if (request) {
+          if (request.empid && request.gender && request.dob && request.doj && request.team && request.nationality) {
+              var em = { email: request.email };
+              var sql = "SELECT id FROM tbl_emp WHERE ?";
+              var dbquery = await mysqlcon(sql, em);
+              if (dbquery[0]) {
+                  var user_data = {
+                      empid: request.empid,
+                      gender: request.gender,
+                      dob: request.dob,
+                      doj: request.doj,
+                      team: request.team,
+                      image: img.originalname,
+                      
+                  };
+
+                  let result = await mysqlcon("UPDATE tbl_emp SET ? WHERE email = ?", [user_data, request.email]);
+                  if (!result) {
+                      res.status(201).json({
+                          status: false,
+                          message: "Error updating profile",
+                          data: [],
+                      });
+                  } else {
+                      res.status(200).json({
+                          status: true,
+                          message: "Profile updated successfully",
+                          data: result,
+                      });
+                  }
+              } else {
+                  res.status(404).json({
+                      status: false,
+                      message: "User not found",
+                      data: [],
+                  });
+              }
+          } else {
+              res.status(400).json({
+                  status: false,
+                  message: "Please provide all required fields: empid, gender, dob, doj, team, nationality",
+                  data: [],
+              });
+          }
+      } else {
+          res.status(400).json({
+              status: false,
+              message: "Please provide request body",
+              data: [],
+          });
+      }
+  } catch (e) {
+      console.log(e);
+      res.status(500).json({ status: false, message: "Error updating profile.", data: [] });
+  }
+}

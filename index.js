@@ -3,7 +3,7 @@ const router=require("express").Router();
 
 const app = express();
 const config=require('./configuration/config.js');
-const PORT= process.env.PORT ||9990;
+const PORT= process.env.PORT ||9000;
 const path=require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');

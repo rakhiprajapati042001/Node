@@ -135,6 +135,8 @@ route.post("/getTableColumns", loginController.getTableColumns);
 route.post("/csvExcelImport",loginController.csvExcelImport);
 
 
+route.post("/updateProfile",upload.single("image"),loginController.updateProfile);
+
 
 
 

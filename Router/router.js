@@ -1,3 +1,5 @@
+
+//create a router with the help of Router class inside express framework
 const route=require("express").Router();
 const loginController=require("../Controller/signUp");
 const authMiddleware=require('../configuration/middleware/authMiddleware')
@@ -21,6 +23,9 @@ var storage = multer.diskStorage({
 );
 
 
+
+
+ 
 
 
 
@@ -103,6 +108,8 @@ route.get("/example", loginController.example);
 route.post("/signUP", loginController.signUP);
 route.post("/login", loginController.login);
 
+//ques-(why we use thi route method)
+//ans-apply route middleware for specific route 
 route.post("/login",authMiddleware, loginController.createUserProfile);
 route.post("/changePassword",authMiddleware, loginController.changePassword);
 route.post("/sendOtp", loginController.sendOtp);
@@ -127,6 +134,8 @@ route.post("/vendorConnection", loginController.vendorConnection);
 route.post("/csv",upload.single('excel'),loginController.csv);
 
 route.post("/csvs",upload.single('excel'),loginController.csvs);
+route.post("/cards",loginController.card);
+
 
 
 // route.post("/csvExcelImport",upload.single('excel'),loginController.csvExcelImport);
@@ -140,6 +149,10 @@ route.post("/updateProfile",upload.single("image"),loginController.updateProfile
 
 
 
+//ROUTING CHANING EXAMPLE
+//route.post("/login",authMiddleware1,authMiddleware2, loginController.createUserProfile);
+
+route.post("/generateSignature",loginController.generateSignature);
 
 
 

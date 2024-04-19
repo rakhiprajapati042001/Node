@@ -10,9 +10,13 @@ const swaggerUi = require('swagger-ui-express');
 // const rout=require('./Router/router.js')
 const { I18n }=require('i18n')
 
+//use build in middleware which is define by express(globally use for all application all routes)
 app.use(express.urlencoded())
+
+//use build in middleware which is define by express(globally use for all application all routes)
 app.use(express.json())
 
+//mounted the router
 app.use(require('./Router/router.js'))
 
 /* URL of Swagger use
@@ -63,6 +67,8 @@ app.use((req, res, next) => {
     i18n.init(req, res);
     next();
   });
+
+  //Direct route 
 app.get("/language", (req, res) => {
     const lang = req.query.lang; // Assuming the language parameter is passed as a query parameter
     res.setLocale(lang); // Set the locale to the requested language
@@ -73,6 +79,9 @@ app.get("/language", (req, res) => {
   
 // run website frontend
 app.listen(PORT, (req, res) =>{
+
+
+  
     console.log('http://' + config.DB_HOST + ':' + PORT);
 });
 

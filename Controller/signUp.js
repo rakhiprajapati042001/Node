@@ -20,7 +20,7 @@ const fs = require('fs');
 const xlsx = require('xlsx');
 const multer = require("multer");
 const { log } = require('console');
-
+const crypto = require('crypto');
 
 dotenv.config();
 
@@ -71,39 +71,39 @@ module.exports.excelExport = async function (req, res) {
 
 
 module.exports.pdfDownload = async function (req, res) {
-  
-  try{
+
+  try {
     let sql = "SELECT * FROM module"
-     let dataSet = await mysqlcon(sql);
+    let dataSet = await mysqlcon(sql);
 
-  const doc = new pdfDoc();
+    const doc = new pdfDoc();
 
 
-  dataSet.forEach((row) => {
-    doc.text(JSON.stringify(row));
-  });
+    dataSet.forEach((row) => {
+      doc.text(JSON.stringify(row));
+    });
 
     const filePath = 'data.pdf';
 
-  const outputStream = fs.createWriteStream(filePath);
-  console.log(outputStream+"outputStream");
-  doc.pipe(outputStream)
-  // Finalize the PDF document
-  doc.end();
-  console.log('PDF created successfully');
+    const outputStream = fs.createWriteStream(filePath);
+    console.log(outputStream + "outputStream");
+    doc.pipe(outputStream)
+    // Finalize the PDF document
+    doc.end();
+    console.log('PDF created successfully');
 
-  res.download(filePath, 'data.pdf', (err) => {
-    if (err) {
-      console.error('Error downloading file:', err);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
+    res.download(filePath, 'data.pdf', (err) => {
+      if (err) {
+        console.error('Error downloading file:', err);
+        res.status(500).send('Internal Server Error');
+        return;
+      }
     })
 
-  }catch(error){
+  } catch (error) {
     console.log(error);
     res.status(500)
-      .json({ status: false, message: "Error to complete task."});
+      .json({ status: false, message: "Error to complete task." });
   }
 
 
@@ -379,6 +379,8 @@ module.exports.changePassword = async function (req, res) {
               "status", "401",
               "message", "the old Password is incorrect");
           }
+
+
         } else {
           return res.json(
             "status", "401",
@@ -864,13 +866,13 @@ module.exports.example = async function (req, res) {
   try {
 
     // let sql2='SELECT name  FROM module  WHERE parent_menu_id = (SELECT id FROM module WHERE name = ?)'
-    let tbl="tbl_code";
-   let result= getTableColumns(tbl)
-   console.log(result);
-   res.send("example Succesfully")
+    let tbl = "tbl_code";
+    let result = getTableColumns(tbl)
+    console.log(result);
+    res.send("example Succesfully")
 
 
-  
+
 
   } catch (err) {
     console.log(err),
@@ -885,46 +887,46 @@ module.exports.example = async function (req, res) {
 
 module.exports.get_menu = async (req, res) => {
   try {
-      const sql = "SELECT * FROM module WHERE parent_menu_id = 0";
-      const details = await mysqlcon(sql);
+    const sql = "SELECT * FROM module WHERE parent_menu_id = 0";
+    const details = await mysqlcon(sql);
 
-      let data1 = [];
+    let data1 = [];
 
-      for(i = 0;i<details.length;i++){
-              // console.log(details[i].id);
-              // console.log(details[i].name);
-      }
-  
-      for (let num = 0; num < details.length; num++) {
-          const submenuSql = `SELECT id,name,image,description FROM module WHERE parent_menu_id = ${details[num].id}`;
-          const submenus = await mysqlcon(submenuSql);
-          let data2=[]
+    for (i = 0; i < details.length; i++) {
+      // console.log(details[i].id);
+      // console.log(details[i].name);
+    }
 
-          submenus.forEach(submenu => {
-              data2.push({
-                  id:submenu.id,
-                  name:submenu.name,
-                  description:submenu.description,
-                  image:submenu.image
-              });
-          });
+    for (let num = 0; num < details.length; num++) {
+      const submenuSql = `SELECT id,name,image,description FROM module WHERE parent_menu_id = ${details[num].id}`;
+      const submenus = await mysqlcon(submenuSql);
+      let data2 = []
 
-          data1.push({
-              id: details[num].id,
-              name: details[num].name,
-              description:details[num].description,
-              images:details[num].image,
+      submenus.forEach(submenu => {
+        data2.push({
+          id: submenu.id,
+          name: submenu.name,
+          description: submenu.description,
+          image: submenu.image
+        });
+      });
 
-             subdata: data2
+      data1.push({
+        id: details[num].id,
+        name: details[num].name,
+        description: details[num].description,
+        images: details[num].image,
 
-          });
-    
-      }
-     
-      return res.status(200).json({ data1 });
+        subdata: data2
+
+      });
+
+    }
+
+    return res.status(200).json({ data1 });
   } catch (err) {
-      console.log(err);
-      return res.status(404).json({ message: err });
+    console.log(err);
+    return res.status(404).json({ message: err });
   }
 };
 
@@ -1015,7 +1017,7 @@ if(failureRate){
 
 
 
-module.exports.importExcelSheet=async (req,res)=>{
+module.exports.importExcelSheet = async (req, res) => {
 
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
@@ -1024,22 +1026,22 @@ module.exports.importExcelSheet=async (req,res)=>{
 
   const workbook = xlsx.readFile(req.file.path);
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-  console.log(Object.values(worksheet)+"worksheet");
+  console.log(Object.values(worksheet) + "worksheet");
   const data = xlsx.utils.sheet_to_json(worksheet);
-  console.log(data+"dara");
+  console.log(data + "dara");
   // Insert data into the database
   data.forEach(row => {
 
 
     // Handle blank values and set default values
-  const name = row.name || ''; // If name is blank, set it to an empty string
-  const parent_menu_id = row.parent_menu_id || 0; // If parent_menu_id is blank, set it to 0
-  const status = row.status == '' ? null : row.status;
-    console.log(row+"youuuu");
+    const name = row.name || ''; // If name is blank, set it to an empty string
+    const parent_menu_id = row.parent_menu_id || 0; // If parent_menu_id is blank, set it to 0
+    const status = row.status == '' ? null : row.status;
+    console.log(row + "youuuu");
     const sql = 'INSERT INTO module (name, parent_menu_id, status) VALUES (?, ?, ?)'; // Modify as per your table structure
     const values = [name, parent_menu_id, status]; // Adjust according to your Excel columns
 
-     mysqlcon(sql, values, (err, result) => {
+    mysqlcon(sql, values, (err, result) => {
       if (err) {
         console.error('Error inserting data:', err);
         return;
@@ -1056,12 +1058,12 @@ module.exports.importExcelSheet=async (req,res)=>{
 
 
 //bank connect database run for vendors 
-module.exports.vendors=async (req,res)=>{
+module.exports.vendors = async (req, res) => {
 
-  try{
-  
-  
-      const sql1 =  `SELECT 
+  try {
+
+
+    const sql1 = `SELECT 
       FORMAT(SUM(CASE WHEN tbl_merchant_transaction.status = 1 THEN tbl_merchant_transaction.ammount ELSE 0 END), 2) AS Total_Amount, 
       payment_gateway.gateway_name 
   FROM 
@@ -1076,116 +1078,117 @@ module.exports.vendors=async (req,res)=>{
       Total_Amount DESC 
   LIMIT 
       10`
-      const deposit = await mysqlcon(sql1);
-  
-      console.log(deposit);
-      const sql2 = `SELECT FORMAT(  SUM(CASE WHEN tbl_icici_payout_transaction_response_details.status = "SUCCESS" THEN  tbl_icici_payout_transaction_response_details.amount ELSE 0 END),2) As Total_Amount FROM tbl_icici_payout_transaction_response_details WHERE created_on >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH) GROUP By amount ORDER BY Total_Amount DESC LIMIT 10`;
-      const payout = await mysqlcon(sql2);
-     
-      if (deposit && payout ) {
-          return res.status(200).json({
-              message: "Data Fetched Successfully",
-              Deposite: deposit,
-              Payout:payout
-             
-          });
-  
-      } else{
-          return res.status(400).json({
-              "message": "Error while fetching data"
-          })
-      
-      }
-  
-  }catch(err){
-      console.log(err);
-      return res.status(201).json({ error: err }); 
+    const deposit = await mysqlcon(sql1);
+
+    console.log(deposit);
+    const sql2 = `SELECT FORMAT(  SUM(CASE WHEN tbl_icici_payout_transaction_response_details.status = "SUCCESS" THEN  tbl_icici_payout_transaction_response_details.amount ELSE 0 END),2) As Total_Amount FROM tbl_icici_payout_transaction_response_details WHERE created_on >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH) GROUP By amount ORDER BY Total_Amount DESC LIMIT 10`;
+    const payout = await mysqlcon(sql2);
+
+    if (deposit && payout) {
+      return res.status(200).json({
+        message: "Data Fetched Successfully",
+        Deposite: deposit,
+        Payout: payout
+
+      });
+
+    } else {
+      return res.status(400).json({
+        "message": "Error while fetching data"
+      })
+
+    }
+
+  } catch (err) {
+    console.log(err);
+    return res.status(201).json({ error: err });
   }
-  
-  
-  
-}  
 
 
 
-module.exports.vendorConnection = async function(req,res) {
-  try{
+}
+
+
+
+module.exports.vendorConnection = async function (req, res) {
+  try {
     let sqlquery = `SELECT ROUND(SUM(ammount)) AS total_amount,payment_gateway.gateway_name FROM tbl_merchant_transaction LEFT JOIN payment_gateway ON tbl_merchant_transaction.gatewayNumber = payment_gateway.id WHERE tbl_merchant_transaction.status = 1 AND tbl_merchant_transaction.created_on >= NOW() - INTERVAL 6 MONTH GROUP BY tbl_merchant_transaction.gatewayNumber LIMIT 10`;
-    
+
     const result = await mysqlcon(sqlquery);
 
     let allTotalAmounts = '';
-    let allGatewayName  = '';
+    let allGatewayName = '';
     for (let i = 0; i < result.length; i++) {
       allTotalAmounts += result[i].total_amount + ', ';
     }
-    for(let j = 0;j<result.length; j++){
-      allGatewayName += result[j].gateway_name+', '
+    for (let j = 0; j < result.length; j++) {
+      allGatewayName += result[j].gateway_name + ', '
     }
 
-  //   console.log(allTotalAmounts);
-  //   console.log(allGatewayName);
-    
-    if(result){
-      return res.status(200).json({ message:'Top 10 vendors Data fetched successfully',
-      DEPOSITE_AMOUNT:allTotalAmounts,GATEWAY_NAME:allGatewayName})
+    //   console.log(allTotalAmounts);
+    //   console.log(allGatewayName);
+
+    if (result) {
+      return res.status(200).json({
+        message: 'Top 10 vendors Data fetched successfully',
+        DEPOSITE_AMOUNT: allTotalAmounts, GATEWAY_NAME: allGatewayName
+      })
     }
-    else{
-      return res.status(201).json({ message:'Unable to fetch data'})
+    else {
+      return res.status(201).json({ message: 'Unable to fetch data' })
     }
-  }catch(err){
-      return res.status(404).json({ err:'Error occured'+err})
+  } catch (err) {
+    return res.status(404).json({ err: 'Error occured' + err })
   }
-}  
+}
 
 
 
-module.exports.csv=async (req,res)=>{
+module.exports.csv = async (req, res) => {
 
- try{
+  try {
 
-  
-  if (!req.file) {
-    return res.status(400).send('No file uploaded.');
-  }
-  const workbook = xlsx.readFile(req.file.path);
-  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-  console.log(Object.values(worksheet)+"worksheet");
-  const data = xlsx.utils.sheet_to_json(worksheet);
-  // Insert data into the database
-  data.forEach(row => {
 
-console.log(row.akontocode);
-    const sql = 'INSERT INTO tbl_code (type, title,status,code,akontocode,payment_gate,bank_services_charge) VALUES (?,?,?,?,?,?,?)'; // Modify as per your table structure
-    const values = [row.type,row.title,row.status,row.code,row.akontocode,row.payment_gate,row.bank_services_charge]; // Adjust according to your Excel columns
-    console.log(row.akontocode);
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+    const workbook = xlsx.readFile(req.file.path);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    console.log(Object.values(worksheet) + "worksheet");
+    const data = xlsx.utils.sheet_to_json(worksheet);
+    // Insert data into the database
+    data.forEach(row => {
 
-    mysqlcon(sql, values, (err, result) => {
-      if (err) {
-        console.error('Error inserting data:', err);
-        return;
-      }
-      console.log('Data inserted successfully:', result);
+      console.log(row.akontocode);
+      const sql = 'INSERT INTO tbl_code (type, title,status,code,akontocode,payment_gate,bank_services_charge) VALUES (?,?,?,?,?,?,?)'; // Modify as per your table structure
+      const values = [row.type, row.title, row.status, row.code, row.akontocode, row.payment_gate, row.bank_services_charge]; // Adjust according to your Excel columns
+      console.log(row.akontocode);
+
+      mysqlcon(sql, values, (err, result) => {
+        if (err) {
+          console.error('Error inserting data:', err);
+          return;
+        }
+        console.log('Data inserted successfully:', result);
+      });
+
+      const sql2 = 'INSERT INTO tbl_akonto_banks_code(type, title, status,code,currencies) VALUES (?, ?, ?,?,?)'; // Modify as per your table structure
+      const values2 = [row.type, row.title, row.status, row.code, row.akontocode, row.payment_gate, row.bank_services_charge]; // Adjust according to your Excel columns
+      mysqlcon(sql2, values2, (err, result) => {
+        if (err) {
+          console.error('Error inserting data:', err);
+          return;
+        }
+        console.log('Data inserted successfully:', result);
+      });
     });
 
-     const sql2 = 'INSERT INTO tbl_akonto_banks_code(type, title, status,code,currencies) VALUES (?, ?, ?,?,?)'; // Modify as per your table structure
-    const values2 = [row.type,row.title, row.status,row.code,row.akontocode,row.payment_gate,row.bank_services_charge]; // Adjust according to your Excel columns
-     mysqlcon(sql2, values2, (err, result) => {
-      if (err) {
-        console.error('Error inserting data:', err);
-        return;
-      }
-      console.log('Data inserted successfully:', result);
-    });
-   });
-
-  // Respond to the client
-  res.send('Data uploaded and inserted into the database.');
- }catch(err)
- {
-  console.log(err);
-      return res.status(201).json({ error: err }); 
- }
+    // Respond to the client
+    res.send('Data uploaded and inserted into the database.');
+  } catch (err) {
+    console.log(err);
+    return res.status(201).json({ error: err });
+  }
 
 }
 
@@ -1203,17 +1206,17 @@ module.exports.csvs = async (req, res) => {
     // Iterate through each row of data
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      
+
       // Perform insertion into the first table (tbl_code)
 
 
       const sql1 = 'INSERT INTO tbl_code (type, title, status, code, akontocode, payment_gate, bank_services_charge) VALUES (?, ?, ?, ?, ?, ?, ?)';
-      
+
       const values1 = [row.type, row.title, row.status, row.code, row.akontocode, row.payment_gate, row.bank_services_charge];
       await mysqlcon(sql1, values1);
 
 
-     
+
 
 
       // Perform insertion into the second table (tbl_akonto_banks_code)
@@ -1241,59 +1244,59 @@ module.exports.upload_excel = async function (req, res) {
     //       message: 'File upload error',
     //       error: err,
     //     });
-      
 
-      if (!req.file) {
-        console.error('Error handling file upload: No file uploaded');
-        return res.status(400).json({
-          message: 'No file uploaded',
-        });
-      }
 
-      
-      const workbook = xlsx.readFile(req.file.path);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-
-      // const workbook = new xlsx.Workbook();
-      // await workbook.xlsx.load(req.file.buffer);
-      // const worksheet = workbook.worksheets[0];
-
-      const columns = worksheet.getRow(1).values.filter(column => column !== null);
-      // res.send(columns)
-      
-      const allData = [];
-
-      for (let i = 2; i <= worksheet.rowCount; i++) {
-        const row = worksheet.getRow(i).values.filter(column => column !== null);;
-        res.send(row)
-      
-        const rowData = {};
-        columns.forEach((column, index) => {
-          rowData[column] = row[index];
-        });
-
-        allData.push(rowData);
-      }
-
-      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code'];
-
-      await Promise.all(tablesToInsert.map(async (tableName) => {
-        const existingColumns = await getTableColumns(tableName);
-
-        const tableColumns = columns.filter(column => existingColumns.includes(column));
-
-        if (tableColumns.length > 0) {
-          const sql = `INSERT INTO ${tableName} (${tableColumns.join(', ')}) VALUES ?`;
-
-          // Map the data for each column and insert as a single row
-          const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
-
-          await mysqlcon(sql, [values]);
-        }
-      }));
-
-      res.send('File uploaded and data inserted into the database.');
+    if (!req.file) {
+      console.error('Error handling file upload: No file uploaded');
+      return res.status(400).json({
+        message: 'No file uploaded',
+      });
     }
+
+
+    const workbook = xlsx.readFile(req.file.path);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    // const workbook = new xlsx.Workbook();
+    // await workbook.xlsx.load(req.file.buffer);
+    // const worksheet = workbook.worksheets[0];
+
+    const columns = worksheet.getRow(1).values.filter(column => column !== null);
+    // res.send(columns)
+
+    const allData = [];
+
+    for (let i = 2; i <= worksheet.rowCount; i++) {
+      const row = worksheet.getRow(i).values.filter(column => column !== null);;
+      res.send(row)
+
+      const rowData = {};
+      columns.forEach((column, index) => {
+        rowData[column] = row[index];
+      });
+
+      allData.push(rowData);
+    }
+
+    const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code'];
+
+    await Promise.all(tablesToInsert.map(async (tableName) => {
+      const existingColumns = await getTableColumns(tableName);
+
+      const tableColumns = columns.filter(column => existingColumns.includes(column));
+
+      if (tableColumns.length > 0) {
+        const sql = `INSERT INTO ${tableName} (${tableColumns.join(', ')}) VALUES ?`;
+
+        // Map the data for each column and insert as a single row
+        const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
+
+        await mysqlcon(sql, [values]);
+      }
+    }));
+
+    res.send('File uploaded and data inserted into the database.');
+  }
   catch (error) {
     console.error('Error handling file upload:', error);
     res.status(500).json({
@@ -1329,40 +1332,40 @@ module.exports.getTableColumns = async function (req, res) {
 }
 
 
-module.exports.csvExcelImport=async function(req,res){
+module.exports.csvExcelImport = async function (req, res) {
 
 
   try {
-      
-
-      if (!req.file) {
-        console.error('Error handling file upload: No file uploaded');
-        return res.status(400).json({
-          message: 'No file uploaded',
-        });
-      }
-
-      const workbook = xlsx.readFile(req.file.path);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      // const data = xlsx.utils.sheet_to_json(worksheet);
-    
-      console.log("Worksheet keys:", Object.keys(worksheet));
-
-      
-      
-      const columns = worksheet.getRow(1).values.filter(column => column !== null);
-
-      const allData = [];
-      console.log("columns"+columns)
 
 
-    }catch(err){
-      console.error('Error fetching table columns:', err);
-      res.status(500).json({
-        message: 'Server Error',
-        error: err
+    if (!req.file) {
+      console.error('Error handling file upload: No file uploaded');
+      return res.status(400).json({
+        message: 'No file uploaded',
       });
     }
+
+    const workbook = xlsx.readFile(req.file.path);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    // const data = xlsx.utils.sheet_to_json(worksheet);
+
+    console.log("Worksheet keys:", Object.keys(worksheet));
+
+
+
+    const columns = worksheet.getRow(1).values.filter(column => column !== null);
+
+    const allData = [];
+    console.log("columns" + columns)
+
+
+  } catch (err) {
+    console.error('Error fetching table columns:', err);
+    res.status(500).json({
+      message: 'Server Error',
+      error: err
+    });
+  }
 
 }
 
@@ -1374,9 +1377,9 @@ async function getTableColumns(tableName) {
       if (err) {
         reject(err);
       } else {
-      console.log(results.Field+"result.Field")
+        console.log(results.Field + "result.Field")
         const columns = results.map(result => result.Field);
-        console.log(columns+"columns")
+        console.log(columns + "columns")
         resolve(columns);
       }
     });
@@ -1403,100 +1406,142 @@ module.exports.csvExcelImport = async function (req, res) {
           message: 'No file uploaded',
         });
       }
-      console.log("req.file"+req.file)
 
       const workbook = new Excel.Workbook();
       await workbook.xlsx.load(req.file.buffer);
       const worksheet = workbook.worksheets[0];
 
-      console.log(worksheet.getRow(1).values+"worksheet")
+      console.log(worksheet.getRow(1).values + "worksheet")
+
+
       let columns = worksheet.getRow(1).values.filter(column => column !== null);
-      // res.send(columns)
-      console.log(columns+"columns00000000000000000000000000");
+      
+      console.log(columns + "columns00000000000000000000000000");
+      
       const allData = [];
-     var newdata;
-        console.log(worksheet.rowCount+"worksheet.rowCount");
+      var newdata;
+      var merNumber;
+      
+      console.log(worksheet.rowCount + "worksheet.rowCount");
+      
       for (let i = 2; i <= worksheet.rowCount; i++) {
+      
         const row = worksheet.getRow(i).values.filter(column => column !== null);
         var rowData = {};
-        console.log(row+"row888888888888888");   
+        console.log(row + "row888888888888888");
         // res.send(row)
-        console.log(columns+"columnsiii")
+        console.log(columns + "columnsiii")
 
         columns.forEach((column, index) => {
-          console.log(column+"column");
-          console.log(index+"index");
+          console.log(column + "column");
+          console.log(index + "index");
+
           rowData[column] = row[index];
-         let bbb= rowData[column]
-         console.log(bbb+"bbb")
+          console.log(rowData[column]+"rowData[column]"+row[index]+"row[index]")
+
+         
         });
 
-       newdata=rowData;
-       console.log(Object.values(newdata)+"newdata")
-console.log(Object.values(rowData)+"rowData");
+
+        newdata = rowData;
+        console.log(Object.values(newdata) + "newdata")
+        console.log(Object.values(rowData) + "rowData");
 
         allData.push(rowData);
 
 
-        console.log(Object.values(allData)+"allData");
-            }
-            console.log("jljkk");
-
-      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code','tbl_merchant_assign'];
+        console.log(Object.values(allData) + "allData");
+      }
+      const tablesToInsert = ['tbl_code', 'tbl_akonto_banks_code', 'tbl_merchant_assign'];
       await Promise.all(tablesToInsert.map(async (tableName) => {
         const existingColumns = await getTableColumns(tableName);
-        console.log(tableName+"tableName")
-console.log(existingColumns+"existingColumns");
+        console.log(tableName + "tableName")
+        console.log(existingColumns + "existingColumns");
+        const extractedValue = [];
+        if (tableName === 'tbl_merchant_assign') {
+          console.log("start---------------------------")
 
-if(tableName==='tbl_merchant_assign'){
-  console.log("start---------------------------")
+          const addd = {
+            'type': 'type',
+            'b_code': 'code',
+            'a_code': 'akontcode',
+            'mer_no': 'mer_no',
+            'status': 'status'
 
-const addd = {
-  'type':'type',
-  'b_code': 'code',
-  'a_code': 'akontcode',  
-  'mer_no':'mer_no',
-  'status':'status'
+          };
+          columns = Object.keys(addd).map(key => key);
+          console.log(columns + "--columns")
 
-};
-  columns = Object.keys(addd).map(key => key);
- console.log(columns+"--columns")
+          console.log(Object.values(allData).forEach(obj => console.log(JSON.stringify(obj)))
+          + "allData9999999999999999999999999999999999999");
 
-}
+          const extractedValues = [];
 
-console.log(columns+"----columns")
+          // Iterate over each object in allData
+      
+          allData.forEach(obj => {
+              // Extract code and akontocode properties
+              const {type, code, akontocode,mer_no,status } = obj;
+          
+              // Create a new object with extracted values
+              const extractedObject = {type, code, akontocode,mer_no,status };
+          
+              // Push the new object into the array
+              extractedValues.push(extractedObject);
+              extractedValue.push(extractedObject)
+          });
+          // Log the extracted values
+          console.log(extractedValues);
+          
+
+        }
+
+       
+
+        console.log(columns + "----columns")
 
 
 
         const tableColumns = columns.filter(column => existingColumns.includes(column));
 
-   console.log(tableColumns+"tableColumns");
+        console.log(tableColumns + "tableColumns");
+
+
+      
+
 
         if (tableColumns.length > 0) {
           const sql = `INSERT INTO ${tableName} (${tableColumns.join(', ')}) VALUES ?`;
 
 
-          console.log(sql+"sql");
+          console.log(sql + "sql");
 
-          
-// if (tableName === 'tbl_merchant_assign') {
-//   // Map the values from akontcode to a_code and code to b_code
-//   console.log(newdata['akontocode']+"newdata['akontocode']")
-//   console.log( newdata['code']+" newdata['code']")
-//   newdata['a_code'] = newdata['akontocode']; // Assuming akontcode is a column name
-//   newdata['b_code'] = newdata['code']; // Assuming code is a column name
 
-  
-//   const values = allData.map(rowData => tableColumns.map(column => newdata[column]));
-//   console.log(values+"values");
-//             await mysqlcon(sql, [values]);
-// }
+          // if (tableName === 'tbl_merchant_assign') {
+          //   // Map the values from akontcode to a_code and code to b_code
+          //   console.log(newdata['akontocode']+"newdata['akontocode']")
+          //   console.log( newdata['code']+" newdata['code']")
+          //   newdata['a_code'] = newdata['akontocode']; // Assuming akontcode is a column name
+          //   newdata['b_code'] = newdata['code']; // Assuming code is a column name
 
-          const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
-console.log(values+"values");
-          await mysqlcon(sql, [values]);
+
+          //   const values = allData.map(rowData => tableColumns.map(column => newdata[column]));
+          //   console.log(values+"values");
+          //             await mysqlcon(sql, [values]);
+          // }
         
-      }
+          if(tableName === 'tbl_merchant_assign'){
+            await mysqlcon(sql,extractedValue );
+            
+
+          }else{
+          const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
+
+
+          console.log(values + "values");
+          await mysqlcon(sql, [values]);
+          }
+        }
       }));
 
       res.send('File uploaded and data inserted into the database.');
@@ -1516,69 +1561,350 @@ console.log(values+"values");
 
 module.exports.updateProfile = async function (req, res) {
 
-// updateProfile: async function (req, res) {
+  // updateProfile: async function (req, res) {
 
   try {
-      var request = req.body;
+    var request = req.body;
 
-      const img = req.file;
-      console.log(img.originalname+"img.originalname")
+    const img = req.file;
+    console.log(img.originalname + "img.originalname")
 
-      console.log(req.user)
-      console.log(request);
-      if (request) {
-          if (request.empid && request.gender && request.dob && request.doj && request.team && request.nationality) {
-              var em = { email: request.email };
-              var sql = "SELECT id FROM tbl_emp WHERE ?";
-              var dbquery = await mysqlcon(sql, em);
-              if (dbquery[0]) {
-                  var user_data = {
-                      empid: request.empid,
-                      gender: request.gender,
-                      dob: request.dob,
-                      doj: request.doj,
-                      team: request.team,
-                      image: img.originalname,
-                      
-                  };
+    console.log(req.user)
+    console.log(request);
+    if (request) {
+      if (request.empid && request.gender && request.dob && request.doj && request.team && request.nationality) {
+        var em = { email: request.email };
+        var sql = "SELECT id FROM tbl_emp WHERE ?";
+        var dbquery = await mysqlcon(sql, em);
+        if (dbquery[0]) {
+          var user_data = {
+            empid: request.empid,
+            gender: request.gender,
+            dob: request.dob,
+            doj: request.doj,
+            team: request.team,
+            image: img.originalname,
 
-                  let result = await mysqlcon("UPDATE tbl_emp SET ? WHERE email = ?", [user_data, request.email]);
-                  if (!result) {
-                      res.status(201).json({
-                          status: false,
-                          message: "Error updating profile",
-                          data: [],
-                      });
-                  } else {
-                      res.status(200).json({
-                          status: true,
-                          message: "Profile updated successfully",
-                          data: result,
-                      });
-                  }
-              } else {
-                  res.status(404).json({
-                      status: false,
-                      message: "User not found",
-                      data: [],
-                  });
-              }
-          } else {
-              res.status(400).json({
-                  status: false,
-                  message: "Please provide all required fields: empid, gender, dob, doj, team, nationality",
-                  data: [],
-              });
-          }
-      } else {
-          res.status(400).json({
+          };
+
+          let result = await mysqlcon("UPDATE tbl_emp SET ? WHERE email = ?", [user_data, request.email]);
+          if (!result) {
+            res.status(201).json({
               status: false,
-              message: "Please provide request body",
+              message: "Error updating profile",
               data: [],
+            });
+          } else {
+            res.status(200).json({
+              status: true,
+              message: "Profile updated successfully",
+              data: result,
+            });
+          }
+        } else {
+          res.status(404).json({
+            status: false,
+            message: "User not found",
+            data: [],
           });
+        }
+      } else {
+        res.status(400).json({
+          status: false,
+          message: "Please provide all required fields: empid, gender, dob, doj, team, nationality",
+          data: [],
+        });
       }
+    } else {
+      res.status(400).json({
+        status: false,
+        message: "Please provide request body",
+        data: [],
+      });
+    }
   } catch (e) {
-      console.log(e);
-      res.status(500).json({ status: false, message: "Error updating profile.", data: [] });
+    console.log(e);
+    res.status(500).json({ status: false, message: "Error updating profile.", data: [] });
   }
 }
+
+module.exports.card = async (req, res) => {
+  try {
+
+
+     
+      
+      const sql1 = "SELECT ROUND (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+      const sql2 = "SELECT ROUND (SUM(amount),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+      const sql3 = "SELECT ROUND (SUM(requestedAmount),2) AS total_amount FROM tbl_settlement WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+      const sql4 = "SELECT ROUND (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+     
+     
+     
+      const result1 = await mysqlcon(sql1);
+      const result2 = await mysqlcon(sql2);
+      const result3 = await mysqlcon(sql3);
+      const result4 = await mysqlcon(sql4)
+
+      if (result1 && result2 && result3 && result4) {
+          return res.status(200).json({
+              message: "DATA Fetch Successfully",
+              Deposite: result1,
+              Payouts: result2,
+              Settlements: result3,
+              Commission: result4
+          })
+      }
+      else {
+          return res.status(400).json({
+              "message": "Error while fetching data"
+          })
+      }
+
+  } catch (err) {
+      console.log(err);
+      return res.status(404).json({
+          message: err,
+      })
+  }
+}
+
+
+
+
+///////////////////////JWT TOKEN ////////////////////////
+
+
+
+// Function to generate secret key based on token part
+
+// module.exports.generateSecretKey = async (req, res) => {
+//   // function generateSecretKey(token, part) {
+
+//   const token=req.body;
+//     try {
+// console.log(req.body.token+"req.body.token")
+
+//         // Decode the JWT token without verification to access the parts
+//         const decodedToken = jwT.decode(req.body.token);
+//         console.log(decodedToken+"decodedToken")
+
+//         if (!decodedToken) {
+//             throw new Error('Invalid token');
+//         }
+
+//         let targetPart;
+//         if (part === 'header') {
+//             targetPart = decodedToken.header;
+//         } else if (part === 'payload') {
+//             targetPart = decodedToken.payload;
+//         } else {
+//             throw new Error('Invalid part specified. Use "header" or "payload".');
+//         }
+
+//         // Convert the part to a JSON string
+//         const targetPartJson = JSON.stringify(targetPart);
+
+//         // Generate a secret key based on the JSON string using SHA-256 hash
+//         const secretKey = crypto.createHash('sha256').update(targetPartJson).digest('hex');
+
+//         return secretKey;
+//     } catch (error) {
+//         console.error('Error generating secret key:', error.message);
+//         return null;
+//     }
+// }
+
+// Example usage:
+// const token = 'your_jwt_token_here';
+// const partToUse = 'payload'; // Specify 'header' or 'payload'
+
+// const secretKey = generateSecretKey(token, partToUse);
+// if (secretKey) {
+//     console.log(`Generated secret key based on ${partToUse}: ${secretKey}`);
+// }
+
+
+
+// Function to generate a signed JWT using header, payload, and secret key
+
+
+module.exports.generateSignature = async (req, res) => {
+    try {
+        const header = {
+            "alg": "HS256",
+            "clientid": "uatyeppev2"
+        };
+        
+        const payload = {
+            "mercid": "UATYEPPEV2",
+            "orderid": "Billdesk1713438625",
+            "amount": "300.00",
+            "order_date": "2024-04-18T16:40:25+05:30",
+            "currency": "356",
+            "ru": "https://www.google.com/",
+            "itemcode": "DIRECT",
+            "device": {
+                "ip": "103.153.58.59",
+                "init_channel": "internet",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0"
+            }
+        };
+
+        let x = typeof(payload);
+        console.log(x);
+        
+        const secretKey = 'WP2C5oLaKvFOWvmRUvkWDdXytF27LwbI';
+
+        // Generate signature using JWT
+        const signature = jwt.sign(payload, secretKey, {
+            algorithm: 'HS256',
+            header: header
+            
+        });
+
+        if(signature){
+
+        console.log('Generated Signature:', signature);
+        return res.status(400).json({
+          "message": " fetching Signature",
+          "signature":signature
+      })        
+    }else{
+          console.log(' NOT Generated Signature:', signature);
+          return res.status(400).json({
+            "message": " error while fetching Signature",
+            "signature":null
+
+        })        }
+    } catch (error) {
+      console.log(err);
+      return res.status(404).json({
+          message: error,
+      })
+    }
+};
+
+
+// Example usage:
+// const header = {
+//     alg: 'HS256',
+//     typ: 'JWT'
+// };
+
+// const payload = {
+//     userId: '123456',
+//     username: 'example_user'
+// };
+
+// const secretKey = 'your_secret_key_here';
+
+// const signedJWT = generateSignedJWT(header, payload, secretKey);
+// if (signedJWT) {
+//     console.log('Generated Signed JWT:', signedJWT);
+// } else {
+//     console.log('Failed to generate signed JWT.');
+// }
+
+// module.exports.card = async (req, res) => {
+//     try {
+
+
+//      let {todayDay,yesterdayDay,weeklyday,monthly,to,from}=req.body;
+//      console.log(req.body+"req.body");
+//      console.log(to+"to");
+//      console.log(from+"from");
+
+//         let today = new Date().toISOString().split('T')[0]; // Get today's date
+//         console.log(today);
+    
+
+//         const yesterday = new Date();
+//         yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
+//          yesterdayFormatted = yesterday.toISOString().split('T')[0]
+        
+// // console.log(yesterday);
+       
+
+// let sql1;
+// let sql2;
+// let sql3;
+// let sql4;
+        
+
+
+//      if(yesterdayDay==1){
+
+      
+        
+//          sql1 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) = '${yesterdayFormatted}';
+//          sql2 = SELECT FORMAT(SUM(amount), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND  DATE(created_on) ='${yesterdayFormatted}';
+//          sql3 = SELECT FORMAT(SUM(requestedAmount), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND  DATE(created_on) ='${yesterdayFormatted}';
+//          sql4 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND DATE(created_on) ='${yesterdayFormatted}'
+       
+//     }else if(todayDay==2){
+
+//          sql1 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) = '${today}';
+//          sql2 = SELECT FORMAT(SUM(amount), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND DATE(created_on) ='${today}';
+//          sql3 = SELECT FORMAT(SUM(requestedAmount), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND  DATE(created_on) ='${today}';
+//          sql4 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND  DATE(created_on) ='${today}'
+//     }
+//     else if(weeklyday==3){
+
+//         sql1 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY);
+//         sql2 = SELECT FORMAT(SUM(amount), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY);
+//         sql3 = SELECT FORMAT(SUM(requestedAmount), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY);
+//         sql4 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+//     }
+//     else if(monthly==4){
+
+//         sql1 = SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND  DATE(created_on) >=DATE_SUB(CURDATE(), INTERVAL 1 MONTH);
+//          sql2 = SELECT FORMAT (SUM(amount),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH);
+//          sql3 = SELECT FORMAT (SUM(requestedAmount),2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH);
+//          sql4 = SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH);
+//       }
+//       else if(to!=null && from!=null){
+
+//         console.log(to+"to");
+//         console.log(from+"from");
+
+//         sql1 = SELECT FORMAT(SUM(ammount), 2) AS total_amount   FROM tbl_merchant_transaction  WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND DATE(created_on) BETWEEN DATE_SUB('${to}', INTERVAL ${from} DAY) AND '${to}';
+//          sql2 = SELECT FORMAT (SUM(amount),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) BETWEEN DATE_SUB('${to}', INTERVAL  ${from} DAY) AND '${to}';
+//          sql3 = SELECT FORMAT (SUM(requestedAmount),2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) AND DATE(created_on) BETWEEN DATE_SUB('${to}', INTERVAL ${from} DAY) AND '${to}';
+//          sql4 = SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) BETWEEN DATE_SUB('${to}', INTERVAL ${from} DAY) AND '${to}';
+//       }
+    
+//     else{
+//          sql1 = "SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+//          sql2 = "SELECT FORMAT (SUM(amount),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+//          sql3 ="SELECT FORMAT (SUM(requestedAmount),2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+//          sql4 = "SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+//     }
+
+//         const result1 = await mysqlcon(sql1);
+//         const result2 = await mysqlcon(sql2);
+//         const result3 = await mysqlcon(sql3);
+//         const result4 = await mysqlcon(sql4)
+
+//         if (result1  && result2 && result3 && result4) {
+//             return res.status(200).json({
+//                 message: "DATA Fetch Successfully",
+//                 Deposite: result1,
+//                 Payouts: result2,
+//                 Settlements: result3,
+//                 Commission: result4
+//             })
+//         }
+//         else {
+//             return res.status(400).json({
+//                 "message": "Error while fetching data"
+//             })
+//         }
+
+//     } catch (err) {
+//         console.log(err);
+//         return res.status(404).json({
+//             message: err,
+//         })
+//     }
+// }

@@ -12,6 +12,11 @@ var storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     let imgname = new Date().toString();
+
+
+
+
+    
     imgname = imgname.replace(/ |:|\+|\(|\)/gi, "-");
     let imgext  =file.image;
     let image = `${imgname}${imgext}`;
@@ -154,6 +159,7 @@ route.post("/updateProfile",upload.single("image"),loginController.updateProfile
 
 route.post("/generateSignature",loginController.generateSignature);
 
+route.post("/decodeToken",loginController.decodeToken);
 
 
 

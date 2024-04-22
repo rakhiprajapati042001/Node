@@ -1908,3 +1908,42 @@ module.exports.generateSignature = async (req, res) => {
 //         })
 //     }
 // }
+
+
+module.exports.decodeToken = async (req, res) => {
+
+// function decodeToken(token) {
+  try {
+
+    const token="eyJhbGciOiJIUzI1NiIsImNsaWVudGlkIjoidWF0eWVwcGV2MiIsImtpZCI6IkhNQUMifQ.eyJvYmplY3RpZCI6Im9yZGVyIiwib3JkZXJpZCI6IjYyY2UzMDNkNzY1ZjU5MWQzRCIsImJkb3JkZXJpZCI6Ik9BTjcxOVhUU0tSTkdQIiwibWVyY2lkIjoiVUFUWUVQUEVWMiIsIm9yZGVyX2RhdGUiOiIyMDI0LTA0LTIyVDEyOjU1OjMwKzA1OjMwIiwiYW1vdW50IjoiMzAzLjc0IiwiY3VycmVuY3kiOiIzNTYiLCJydSI6Imh0dHBzOi8vcGF5b3dheS5jb20vd2ViL2JhbmtwYXkvQmFua3BheS9yZXR1cm5iaWxsdXJsIiwiYWRkaXRpb25hbF9pbmZvIjp7ImFkZGl0aW9uYWxfaW5mbzEiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzIiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzMiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzQiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzUiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzYiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzciOiJOQSIsImFkZGl0aW9uYWxfaW5mbzgiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzkiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzEwIjoiTkEifSwiaXRlbWNvZGUiOiJESVJFQ1QiLCJjcmVhdGVkb24iOiIyMDI0LTA0LTIyVDEyOjU1OjMyKzA1OjMwIiwibmV4dF9zdGVwIjoicmVkaXJlY3QiLCJsaW5rcyI6W3siaHJlZiI6Imh0dHBzOi8vd3d3LmJpbGxkZXNrLmNvbS9wZ2kvdmUxXzIvb3JkZXJzLzYyY2UzMDNkNzY1ZjU5MWQzRCIsInJlbCI6InNlbGYiLCJtZXRob2QiOiJHRVQifSx7ImhyZWYiOiJodHRwczovL3VhdDEuYmlsbGRlc2suY29tL3UyL3dlYi92MV8yL2VtYmVkZGVkc2RrIiwicmVsIjoicmVkaXJlY3QiLCJtZXRob2QiOiJQT1NUIiwicGFyYW1ldGVycyI6eyJtZXJjaWQiOiJVQVRZRVBQRVYyIiwiYmRvcmRlcmlkIjoiT0FONzE5WFRTS1JOR1AiLCJyZGF0YSI6ImM1NTQzMDA2ODg3OGI1OGNkNTlmMDE5NTY2MGI1NzJmYmNlYjZkZTYwMjhiMzYxMjExNzJmODc5NjQyZGI1MDEyYzZiMDljODg3ZWFhMGVhM2ZiZDMwMjQwYjY3Zjg2ZmY4ZDY1ZDZjYTQ3ZTY0MzZjNzUwMTEyNGJiMGIxNzIzMzAuNzU2MTc0NmI2NTc5MzEifSwidmFsaWRfZGF0ZSI6IjIwMjQtMDQtMjJUMTM6MjU6MzIrMDU6MzAiLCJoZWFkZXJzIjp7ImF1dGhvcml6YXRpb24iOiJPVG9rZW4gMzVjZWM5OWMwYzFhNTdmNjAzZDc5ZjNjNTAzOWE2YjlmZTU2NTdlMGIxYzQ3MGYwNzk1ZDU1OWZlNzUxMjQ0ZGM4NTg5Y2IxMjRlYjU3Y2JjYThmMmM3YzRkOTU4MGRmYjI3MTYyMjgyMWY3YmIwM2QwMTJiMjIwYzk2YWM5MTcxNGFiMjkyMjY2NTgzYjNkYTRhZWY2MDZjM2JkY2E0Y2UyNGM3YjgyMGRmMTQ0ZWUzOTI2ZDY0YTZhZDRjYjc0NGMxNTJkNGRiMzQxYzkzMDFiNmMyNDg4YTI5NjcyZjZiOGYxYTg5MTIyMGRkNDRlOGI4NDVjMThiOTc2ODVhYTJiMGNiMmU4NTNmMDEyZGIzZTkwNGU4MWU3YTY5MjExNzg4MGFjZDcxZjE3ZmI3MDc0ZTdkYy40MTQ1NTM1ZjU1NDE1NDMxIn19XSwic3RhdHVzIjoiQUNUSVZFIn0.qLDYfJbdwPnCxZK7ZPJZnm7UDFonIGZHeYKAfMtf2VE";
+      const tokenParts = token.split('.');
+      const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString('utf-8'));
+      const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString('utf-8'));   
+
+      if( header && payload){
+
+        console.log('hedaer:', header);
+        return res.status(400).json({
+          "message": "Decode Token",
+          "header":header,
+          "payload":payload,
+          
+        })        
+    }else{
+          console.log(' NOT Generated Signature:', header);
+          return res.status(400).json({
+            "message": " error while fetching Signature",
+            "header":null,
+            "payload":null
+
+
+        }) 
+      }
+
+  } catch (error) {
+      console.error('Token decoding error:', error);
+      return null; // Handle decoding error gracefully
+  }
+}
+
+// Example usage:

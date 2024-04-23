@@ -1415,17 +1415,17 @@ module.exports.csvExcelImport = async function (req, res) {
 
 
       let columns = worksheet.getRow(1).values.filter(column => column !== null);
-      
+
       console.log(columns + "columns00000000000000000000000000");
-      
+
       const allData = [];
       var newdata;
       var merNumber;
-      
+
       console.log(worksheet.rowCount + "worksheet.rowCount");
-      
+
       for (let i = 2; i <= worksheet.rowCount; i++) {
-      
+
         const row = worksheet.getRow(i).values.filter(column => column !== null);
         var rowData = {};
         console.log(row + "row888888888888888");
@@ -1437,9 +1437,9 @@ module.exports.csvExcelImport = async function (req, res) {
           console.log(index + "index");
 
           rowData[column] = row[index];
-          console.log(rowData[column]+"rowData[column]"+row[index]+"row[index]")
+          console.log(rowData[column] + "rowData[column]" + row[index] + "row[index]")
 
-         
+
         });
 
 
@@ -1473,30 +1473,30 @@ module.exports.csvExcelImport = async function (req, res) {
           console.log(columns + "--columns")
 
           console.log(Object.values(allData).forEach(obj => console.log(JSON.stringify(obj)))
-          + "allData9999999999999999999999999999999999999");
+            + "allData9999999999999999999999999999999999999");
 
           const extractedValues = [];
 
           // Iterate over each object in allData
-      
+
           allData.forEach(obj => {
-              // Extract code and akontocode properties
-              const {type, code, akontocode,mer_no,status } = obj;
-          
-              // Create a new object with extracted values
-              const extractedObject = {type, code, akontocode,mer_no,status };
-          
-              // Push the new object into the array
-              extractedValues.push(extractedObject);
-              extractedValue.push(extractedObject)
+            // Extract code and akontocode properties
+            const { type, code, akontocode, mer_no, status } = obj;
+
+            // Create a new object with extracted values
+            const extractedObject = { type, code, akontocode, mer_no, status };
+
+            // Push the new object into the array
+            extractedValues.push(extractedObject);
+            extractedValue.push(extractedObject)
           });
           // Log the extracted values
           console.log(extractedValues);
-          
+
 
         }
 
-       
+
 
         console.log(columns + "----columns")
 
@@ -1507,7 +1507,7 @@ module.exports.csvExcelImport = async function (req, res) {
         console.log(tableColumns + "tableColumns");
 
 
-      
+
 
 
         if (tableColumns.length > 0) {
@@ -1529,17 +1529,17 @@ module.exports.csvExcelImport = async function (req, res) {
           //   console.log(values+"values");
           //             await mysqlcon(sql, [values]);
           // }
-        
-          if(tableName === 'tbl_merchant_assign'){
-            await mysqlcon(sql,extractedValue );
-            
 
-          }else{
-          const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
+          if (tableName === 'tbl_merchant_assign') {
+            await mysqlcon(sql, extractedValue);
 
 
-          console.log(values + "values");
-          await mysqlcon(sql, [values]);
+          } else {
+            const values = allData.map(rowData => tableColumns.map(column => rowData[column]));
+
+
+            console.log(values + "values");
+            await mysqlcon(sql, [values]);
           }
         }
       }));
@@ -1632,40 +1632,178 @@ module.exports.card = async (req, res) => {
   try {
 
 
-     
-      
-      const sql1 = "SELECT ROUND (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-      const sql2 = "SELECT ROUND (SUM(amount),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-      const sql3 = "SELECT ROUND (SUM(requestedAmount),2) AS total_amount FROM tbl_settlement WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-      const sql4 = "SELECT ROUND (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
-     
-     
-     
-      const result1 = await mysqlcon(sql1);
-      const result2 = await mysqlcon(sql2);
-      const result3 = await mysqlcon(sql3);
-      const result4 = await mysqlcon(sql4)
+    let { filter, to, from } = req.body;
+    console.log(req.body + "req.body");
+    console.log(to + "to");
+    console.log(from + "from");
 
-      if (result1 && result2 && result3 && result4) {
-          return res.status(200).json({
-              message: "DATA Fetch Successfully",
-              Deposite: result1,
-              Payouts: result2,
-              Settlements: result3,
-              Commission: result4
-          })
-      }
-      else {
-          return res.status(400).json({
-              "message": "Error while fetching data"
-          })
-      }
+    let today = new Date().toISOString().split('T')[0]; // Get today's date
+    console.log(today);
+
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
+    yesterdayFormatted = yesterday.toISOString().split('T')[0]
+
+    // console.log(yesterday);
+
+
+    let sql1;
+    let sql2;
+    let sql3;
+    let sql4;
+
+    if (filter == 1) {
+      //today
+      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1  AND DATE(created_on) = '${today}'`;
+      sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) ='${today}'`;
+      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND   DATE(created_on) ='${today}'`;
+      //  sql4 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND  DATE(created_on) ='${today}'`
+      sql4 = `SELECT 
+    (SELECT COALESCE(SUM(payin_charges), 0) 
+     FROM tbl_merchant_transaction 
+     WHERE status = 1 AND DATE(created_on) = '${today}') 
+    +
+    (SELECT COALESCE(SUM(charges), 0) 
+     FROM tbl_settlement 
+     WHERE status = 1 AND DATE(created_on) = '${today}') 
+    +
+    (SELECT COALESCE(SUM(akonto_charge), 0) 
+     FROM tbl_icici_payout_transaction_response_details 
+     WHERE status = 'SUCCESS' AND DATE(created_on) = '${today}'
+    
+      )AS total_amount;
+`;
+
+
+
+    }
+    else if (filter == 2) {
+      //weekly
+      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+      sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND   DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1   AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+      // sql4 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+      sql4 = `SELECT (SELECT COALESCE(SUM(payin_charges), 0)  FROM tbl_merchant_transaction  WHERE status = 1 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY))  +
+      (SELECT COALESCE(SUM(charges), 0) 
+       FROM tbl_settlement 
+       WHERE status = 1 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)) 
+      +
+      (SELECT COALESCE(SUM(akonto_charge), 0) 
+       FROM tbl_icici_payout_transaction_response_details 
+       WHERE status = 'SUCCESS' AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)) 
+  AS total_amount;`
+
+    }
+    else if (filter == 3) {
+      //month
+      sql1 = `SELECT FORMAT (COALESCE(SUM(ammount),0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND  DATE(created_on) >=DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+      sql2 = `SELECT FORMAT (COALESCE(SUM(amount),0),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+      sql3 = `SELECT FORMAT (COALESCE(SUM(requestedAmount),0),2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+      //  sql4 = `SELECT FORMAT (COALESCE(SUM(ammount),0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+      sql4 = `SELECT 
+    (SELECT COALESCE(SUM(payin_charges), 0) 
+     FROM tbl_merchant_transaction 
+     WHERE status = 1 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) 
+    +
+    (SELECT COALESCE(SUM(charges), 0) 
+     FROM tbl_settlement 
+     WHERE status = 1 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) 
+    +
+    (SELECT COALESCE(SUM(akonto_charge), 0) 
+     FROM tbl_icici_payout_transaction_response_details 
+     WHERE status = 'SUCCESS' AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) 
+AS total_amount;`
+
+    }
+    else if (to != null && from != null) {
+      //to too from
+
+
+      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount  FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= '${to}'  AND created_on <= '${from}'`;
+
+      sql2 = `SELECT FORMAT (COALESCE(SUM(amount),0),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= '${to}'  AND created_on <= '${from}'`;
+      sql3 = `SELECT FORMAT (COALESCE(SUM(requestedAmount),0),2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= '${to}'  AND created_on <= '${from}'`;
+      // sql4 = `SELECT FORMAT (COALESCE(SUM(ammount),0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= '${to}'  AND created_on <= '${from}'`;
+      sql4=`SELECT 
+      (SELECT COALESCE(SUM(payin_charges), 0) 
+       FROM tbl_merchant_transaction 
+       WHERE status = 1 AND created_on >= '${to}'  AND created_on <= '${from}') 
+      +
+      (SELECT COALESCE(SUM(charges), 0) 
+       FROM tbl_settlement 
+       WHERE status = 1 AND created_on >= '${to}'  AND created_on <= '${from}') 
+      +
+      (SELECT COALESCE(SUM(akonto_charge), 0) 
+       FROM tbl_icici_payout_transaction_response_details 
+       WHERE status = 'SUCCESS' AND created_on >= '${to}'  AND created_on <= '${from}') 
+  AS total_amount;
+  
+  
+  
+  
+  `
+   
+    }
+
+    else {
+      //yesterday
+      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount), 0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND   DATE(created_on) = '${yesterdayFormatted}'`;
+      sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND  DATE(created_on) ='${yesterdayFormatted}'`;
+      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) ='${yesterdayFormatted}'`;
+      // sql4 = `SELECT FORMAT(COALESCE(SUM(ammount), 0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND  DATE(created_on) ='${yesterdayFormatted}'`
+      sql4 = `SELECT 
+    (SELECT COALESCE(SUM(payin_charges), 0) 
+     FROM tbl_merchant_transaction 
+     WHERE status = 1 AND DATE(created_on) = '${yesterdayFormatted}') 
+    +
+    (SELECT COALESCE(SUM(charges), 0) 
+     FROM tbl_settlement 
+     WHERE status = 1 AND DATE(created_on) = '${yesterdayFormatted}') 
+    +
+    (SELECT COALESCE(SUM(akonto_charge), 0) 
+     FROM tbl_icici_payout_transaction_response_details 
+     WHERE status = 'SUCCESS' AND DATE(created_on) = '${yesterdayFormatted}') 
+AS total_amount;`
+
+
+    }
+
+    const result1 = await mysqlcon(sql1);
+    const result2 = await mysqlcon(sql2);
+    const result3 = await mysqlcon(sql3);
+    const result4 = await mysqlcon(sql4)
+
+
+    // const amount1 = result1 ? result1 : 0;
+    // const amount2 = result2 ? result2 : 0;
+    // const amount3 = result3 ? result3 : 0;
+    // const amount4 = result4 ? result4 : 0;
+
+
+
+    if (result1 && result2 && result3 && result4) {
+      return res.status(200).json({
+
+
+        message: "Amount Fetch Successfully ",
+        Deposite: result1[0].total_amount,
+        Payouts: result2[0].total_amount,
+        Settlements: result3[0].total_amount,
+        Commission: result4[0].total_amount,
+      })
+    }
+    else {
+      return res.status(400).json({
+        "message": "Error while fetching data"
+      })
+    }
 
   } catch (err) {
-      console.log(err);
-      return res.status(404).json({
-          message: err,
-      })
+    console.log(err);
+    return res.status(404).json({
+      message: err,
+    })
   }
 }
 
@@ -1730,59 +1868,60 @@ module.exports.card = async (req, res) => {
 
 
 module.exports.generateSignature = async (req, res) => {
-    try {
-        const header = {
-            "alg": "HS256",
-            "clientid": "uatyeppev2"
-        };
-        
-        const payload = {
-            "mercid": "UATYEPPEV2",
-            "orderid": "Billdesk1713438625",
-            "amount": "300.00",
-            "order_date": "2024-04-18T16:40:25+05:30",
-            "currency": "356",
-            "ru": "https://www.google.com/",
-            "itemcode": "DIRECT",
-            "device": {
-                "ip": "103.153.58.59",
-                "init_channel": "internet",
-                "user_agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0"
-            }
-        };
+  try {
+    const header = {
+      "alg": "HS256",
+      "clientid": "uatyeppev2"
+    };
 
-        let x = typeof(payload);
-        console.log(x);
-        
-        const secretKey = 'WP2C5oLaKvFOWvmRUvkWDdXytF27LwbI';
+    const payload = {
+      "mercid": "UATYEPPEV2",
+      "orderid": "Billdesk1713438625",
+      "amount": "300.00",
+      "order_date": "2024-04-18T16:40:25+05:30",
+      "currency": "356",
+      "ru": "https://www.google.com/",
+      "itemcode": "DIRECT",
+      "device": {
+        "ip": "103.153.58.59",
+        "init_channel": "internet",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0"
+      }
+    };
 
-        // Generate signature using JWT
-        const signature = jwt.sign(payload, secretKey, {
-            algorithm: 'HS256',
-            header: header
-            
-        });
+    let x = typeof (payload);
+    console.log(x);
 
-        if(signature){
+    const secretKey = 'WP2C5oLaKvFOWvmRUvkWDdXytF27LwbI';
 
-        console.log('Generated Signature:', signature);
-        return res.status(400).json({
-          "message": " fetching Signature",
-          "signature":signature
-      })        
-    }else{
-          console.log(' NOT Generated Signature:', signature);
-          return res.status(400).json({
-            "message": " error while fetching Signature",
-            "signature":null
+    // Generate signature using JWT
+    const signature = jwt.sign(payload, secretKey, {
+      algorithm: 'HS256',
+      header: header
 
-        })        }
-    } catch (error) {
-      console.log(err);
-      return res.status(404).json({
-          message: error,
+    });
+
+    if (signature) {
+
+      console.log('Generated Signature:', signature);
+      return res.status(400).json({
+        "message": " fetching Signature",
+        "signature": signature
+      })
+    } else {
+      console.log(' NOT Generated Signature:', signature);
+      return res.status(400).json({
+        "message": " error while fetching Signature",
+        "signature": null
+
       })
     }
+  } catch (error) {
+    console.log(err);
+    return res.status(404).json({
+      message: error,
+    })
+  }
 };
 
 
@@ -1817,31 +1956,31 @@ module.exports.generateSignature = async (req, res) => {
 
 //         let today = new Date().toISOString().split('T')[0]; // Get today's date
 //         console.log(today);
-    
+
 
 //         const yesterday = new Date();
 //         yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
 //          yesterdayFormatted = yesterday.toISOString().split('T')[0]
-        
+
 // // console.log(yesterday);
-       
+
 
 // let sql1;
 // let sql2;
 // let sql3;
 // let sql4;
-        
+
 
 
 //      if(yesterdayDay==1){
 
-      
-        
+
+
 //          sql1 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) = '${yesterdayFormatted}';
 //          sql2 = SELECT FORMAT(SUM(amount), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND  DATE(created_on) ='${yesterdayFormatted}';
 //          sql3 = SELECT FORMAT(SUM(requestedAmount), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND  DATE(created_on) ='${yesterdayFormatted}';
 //          sql4 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)  AND DATE(created_on) ='${yesterdayFormatted}'
-       
+
 //     }else if(todayDay==2){
 
 //          sql1 = SELECT FORMAT(SUM(ammount), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) = '${today}';
@@ -1873,7 +2012,7 @@ module.exports.generateSignature = async (req, res) => {
 //          sql3 = SELECT FORMAT (SUM(requestedAmount),2) AS total_amount FROM tbl_settlement WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) AND DATE(created_on) BETWEEN DATE_SUB('${to}', INTERVAL ${from} DAY) AND '${to}';
 //          sql4 = SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) AND DATE(created_on) BETWEEN DATE_SUB('${to}', INTERVAL ${from} DAY) AND '${to}';
 //       }
-    
+
 //     else{
 //          sql1 = "SELECT FORMAT (SUM(ammount),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
 //          sql2 = "SELECT FORMAT (SUM(amount),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND created_on >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
@@ -1912,37 +2051,37 @@ module.exports.generateSignature = async (req, res) => {
 
 module.exports.decodeToken = async (req, res) => {
 
-// function decodeToken(token) {
+  // function decodeToken(token) {
   try {
 
-    const token="eyJhbGciOiJIUzI1NiIsImNsaWVudGlkIjoidWF0eWVwcGV2MiIsImtpZCI6IkhNQUMifQ.eyJvYmplY3RpZCI6Im9yZGVyIiwib3JkZXJpZCI6IjYyY2UzMDNkNzY1ZjU5MWQzRCIsImJkb3JkZXJpZCI6Ik9BTjcxOVhUU0tSTkdQIiwibWVyY2lkIjoiVUFUWUVQUEVWMiIsIm9yZGVyX2RhdGUiOiIyMDI0LTA0LTIyVDEyOjU1OjMwKzA1OjMwIiwiYW1vdW50IjoiMzAzLjc0IiwiY3VycmVuY3kiOiIzNTYiLCJydSI6Imh0dHBzOi8vcGF5b3dheS5jb20vd2ViL2JhbmtwYXkvQmFua3BheS9yZXR1cm5iaWxsdXJsIiwiYWRkaXRpb25hbF9pbmZvIjp7ImFkZGl0aW9uYWxfaW5mbzEiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzIiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzMiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzQiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzUiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzYiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzciOiJOQSIsImFkZGl0aW9uYWxfaW5mbzgiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzkiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzEwIjoiTkEifSwiaXRlbWNvZGUiOiJESVJFQ1QiLCJjcmVhdGVkb24iOiIyMDI0LTA0LTIyVDEyOjU1OjMyKzA1OjMwIiwibmV4dF9zdGVwIjoicmVkaXJlY3QiLCJsaW5rcyI6W3siaHJlZiI6Imh0dHBzOi8vd3d3LmJpbGxkZXNrLmNvbS9wZ2kvdmUxXzIvb3JkZXJzLzYyY2UzMDNkNzY1ZjU5MWQzRCIsInJlbCI6InNlbGYiLCJtZXRob2QiOiJHRVQifSx7ImhyZWYiOiJodHRwczovL3VhdDEuYmlsbGRlc2suY29tL3UyL3dlYi92MV8yL2VtYmVkZGVkc2RrIiwicmVsIjoicmVkaXJlY3QiLCJtZXRob2QiOiJQT1NUIiwicGFyYW1ldGVycyI6eyJtZXJjaWQiOiJVQVRZRVBQRVYyIiwiYmRvcmRlcmlkIjoiT0FONzE5WFRTS1JOR1AiLCJyZGF0YSI6ImM1NTQzMDA2ODg3OGI1OGNkNTlmMDE5NTY2MGI1NzJmYmNlYjZkZTYwMjhiMzYxMjExNzJmODc5NjQyZGI1MDEyYzZiMDljODg3ZWFhMGVhM2ZiZDMwMjQwYjY3Zjg2ZmY4ZDY1ZDZjYTQ3ZTY0MzZjNzUwMTEyNGJiMGIxNzIzMzAuNzU2MTc0NmI2NTc5MzEifSwidmFsaWRfZGF0ZSI6IjIwMjQtMDQtMjJUMTM6MjU6MzIrMDU6MzAiLCJoZWFkZXJzIjp7ImF1dGhvcml6YXRpb24iOiJPVG9rZW4gMzVjZWM5OWMwYzFhNTdmNjAzZDc5ZjNjNTAzOWE2YjlmZTU2NTdlMGIxYzQ3MGYwNzk1ZDU1OWZlNzUxMjQ0ZGM4NTg5Y2IxMjRlYjU3Y2JjYThmMmM3YzRkOTU4MGRmYjI3MTYyMjgyMWY3YmIwM2QwMTJiMjIwYzk2YWM5MTcxNGFiMjkyMjY2NTgzYjNkYTRhZWY2MDZjM2JkY2E0Y2UyNGM3YjgyMGRmMTQ0ZWUzOTI2ZDY0YTZhZDRjYjc0NGMxNTJkNGRiMzQxYzkzMDFiNmMyNDg4YTI5NjcyZjZiOGYxYTg5MTIyMGRkNDRlOGI4NDVjMThiOTc2ODVhYTJiMGNiMmU4NTNmMDEyZGIzZTkwNGU4MWU3YTY5MjExNzg4MGFjZDcxZjE3ZmI3MDc0ZTdkYy40MTQ1NTM1ZjU1NDE1NDMxIn19XSwic3RhdHVzIjoiQUNUSVZFIn0.qLDYfJbdwPnCxZK7ZPJZnm7UDFonIGZHeYKAfMtf2VE";
-      const tokenParts = token.split('.');
-      const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString('utf-8'));
-      const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString('utf-8'));   
+    const token = "eyJhbGciOiJIUzI1NiIsImNsaWVudGlkIjoidWF0eWVwcGV2MiIsImtpZCI6IkhNQUMifQ.eyJvYmplY3RpZCI6Im9yZGVyIiwib3JkZXJpZCI6IjYyY2UzMDNkNzY1ZjU5MWQzRCIsImJkb3JkZXJpZCI6Ik9BTjcxOVhUU0tSTkdQIiwibWVyY2lkIjoiVUFUWUVQUEVWMiIsIm9yZGVyX2RhdGUiOiIyMDI0LTA0LTIyVDEyOjU1OjMwKzA1OjMwIiwiYW1vdW50IjoiMzAzLjc0IiwiY3VycmVuY3kiOiIzNTYiLCJydSI6Imh0dHBzOi8vcGF5b3dheS5jb20vd2ViL2JhbmtwYXkvQmFua3BheS9yZXR1cm5iaWxsdXJsIiwiYWRkaXRpb25hbF9pbmZvIjp7ImFkZGl0aW9uYWxfaW5mbzEiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzIiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzMiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzQiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzUiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzYiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzciOiJOQSIsImFkZGl0aW9uYWxfaW5mbzgiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzkiOiJOQSIsImFkZGl0aW9uYWxfaW5mbzEwIjoiTkEifSwiaXRlbWNvZGUiOiJESVJFQ1QiLCJjcmVhdGVkb24iOiIyMDI0LTA0LTIyVDEyOjU1OjMyKzA1OjMwIiwibmV4dF9zdGVwIjoicmVkaXJlY3QiLCJsaW5rcyI6W3siaHJlZiI6Imh0dHBzOi8vd3d3LmJpbGxkZXNrLmNvbS9wZ2kvdmUxXzIvb3JkZXJzLzYyY2UzMDNkNzY1ZjU5MWQzRCIsInJlbCI6InNlbGYiLCJtZXRob2QiOiJHRVQifSx7ImhyZWYiOiJodHRwczovL3VhdDEuYmlsbGRlc2suY29tL3UyL3dlYi92MV8yL2VtYmVkZGVkc2RrIiwicmVsIjoicmVkaXJlY3QiLCJtZXRob2QiOiJQT1NUIiwicGFyYW1ldGVycyI6eyJtZXJjaWQiOiJVQVRZRVBQRVYyIiwiYmRvcmRlcmlkIjoiT0FONzE5WFRTS1JOR1AiLCJyZGF0YSI6ImM1NTQzMDA2ODg3OGI1OGNkNTlmMDE5NTY2MGI1NzJmYmNlYjZkZTYwMjhiMzYxMjExNzJmODc5NjQyZGI1MDEyYzZiMDljODg3ZWFhMGVhM2ZiZDMwMjQwYjY3Zjg2ZmY4ZDY1ZDZjYTQ3ZTY0MzZjNzUwMTEyNGJiMGIxNzIzMzAuNzU2MTc0NmI2NTc5MzEifSwidmFsaWRfZGF0ZSI6IjIwMjQtMDQtMjJUMTM6MjU6MzIrMDU6MzAiLCJoZWFkZXJzIjp7ImF1dGhvcml6YXRpb24iOiJPVG9rZW4gMzVjZWM5OWMwYzFhNTdmNjAzZDc5ZjNjNTAzOWE2YjlmZTU2NTdlMGIxYzQ3MGYwNzk1ZDU1OWZlNzUxMjQ0ZGM4NTg5Y2IxMjRlYjU3Y2JjYThmMmM3YzRkOTU4MGRmYjI3MTYyMjgyMWY3YmIwM2QwMTJiMjIwYzk2YWM5MTcxNGFiMjkyMjY2NTgzYjNkYTRhZWY2MDZjM2JkY2E0Y2UyNGM3YjgyMGRmMTQ0ZWUzOTI2ZDY0YTZhZDRjYjc0NGMxNTJkNGRiMzQxYzkzMDFiNmMyNDg4YTI5NjcyZjZiOGYxYTg5MTIyMGRkNDRlOGI4NDVjMThiOTc2ODVhYTJiMGNiMmU4NTNmMDEyZGIzZTkwNGU4MWU3YTY5MjExNzg4MGFjZDcxZjE3ZmI3MDc0ZTdkYy40MTQ1NTM1ZjU1NDE1NDMxIn19XSwic3RhdHVzIjoiQUNUSVZFIn0.qLDYfJbdwPnCxZK7ZPJZnm7UDFonIGZHeYKAfMtf2VE";
+    const tokenParts = token.split('.');
+    const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString('utf-8'));
+    const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString('utf-8'));
 
-      if( header && payload){
+    if (header && payload) {
 
-        console.log('hedaer:', header);
-        return res.status(400).json({
-          "message": "Decode Token",
-          "header":header,
-          "payload":payload,
-          
-        })        
-    }else{
-          console.log(' NOT Generated Signature:', header);
-          return res.status(400).json({
-            "message": " error while fetching Signature",
-            "header":null,
-            "payload":null
+      console.log('hedaer:', header);
+      return res.status(400).json({
+        "message": "Decode Token",
+        "header": header,
+        "payload": payload,
+
+      })
+    } else {
+      console.log(' NOT Generated Signature:', header);
+      return res.status(400).json({
+        "message": " error while fetching Signature",
+        "header": null,
+        "payload": null
 
 
-        }) 
-      }
+      })
+    }
 
   } catch (error) {
-      console.error('Token decoding error:', error);
-      return null; // Handle decoding error gracefully
+    console.error('Token decoding error:', error);
+    return null; // Handle decoding error gracefully
   }
 }
 

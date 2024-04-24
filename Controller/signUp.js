@@ -1628,6 +1628,7 @@ module.exports.updateProfile = async function (req, res) {
   }
 }
 
+
 module.exports.card = async (req, res) => {
   try {
 
@@ -1858,7 +1859,6 @@ CONCAT(
     })
   }
 }
-
 
 
 
@@ -2138,3 +2138,77 @@ module.exports.decodeToken = async (req, res) => {
 }
 
 // Example usage:
+
+
+module.exports.card = async (req, res) => {
+  try {
+    const { filter, to, from } = req.body;
+
+    let startDate, endDate;
+
+    if (filter == 1) {
+      // Today
+      startDate = endDate = new Date().toISOString().split('T')[0];
+    } else if (filter == 2) {
+      // Past week
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 6); // Start date of the past week (last 7 days)
+      startDate = startDate.toISOString().split('T')[0];
+      endDate = new Date().toISOString().split('T')[0];
+    } else if (filter == 3) {
+      // Past month
+      startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1); // Start date of the past month
+      startDate = startDate.toISOString().split('T')[0];
+      endDate = new Date().toISOString().split('T')[0];
+    } else if (to && from) {
+      // Custom date range provided
+      startDate = to;
+      endDate = from;
+    } else {
+      // Default to yesterday
+      startDate = endDate = new Date();
+      startDate.setDate(startDate.getDate() - 1);
+      startDate = endDate = startDate.toISOString().split('T')[0];
+    }
+
+    const queries = [
+      `SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
+      
+      `SELECT FORMAT(COALESCE(SUM(amount), 0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
+     
+      `SELECT FORMAT(COALESCE(SUM(requestedAmount), 0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
+     
+      `SELECT CONCAT(FORMAT((SELECT COALESCE(SUM(payin_charges), 0) FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}') + (SELECT COALESCE(SUM(charges), 0) FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}') + (SELECT COALESCE(SUM(akonto_charge), 0) FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'), 2)) AS total_amount`
+
+
+      
+   
+    
+    
+    ];
+
+    const [result1, result2, result3,result4] = await Promise.all(queries.map(sql => mysqlcon(sql)));
+
+    if (result1 && result2 && result3 && result4) {
+      return res.status(200).json({
+        message: "Amounts fetched successfully",
+        Deposits: result1[0].total_amount,
+        Payouts: result2[0].total_amount,
+        Settlements: result3[0].total_amount,
+        Commission: result4[0].total_amount
+      });
+    } else {
+      return res.status(400).json({
+        message: "Error while fetching data"
+        
+      });
+    }
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+}

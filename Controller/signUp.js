@@ -933,10 +933,6 @@ module.exports.get_menu = async (req, res) => {
 
 
 
-
-
-
-
 /*another project work apies
 
 module.exports.amount=async (req,res)=>{
@@ -1629,236 +1625,236 @@ module.exports.updateProfile = async function (req, res) {
 }
 
 
-module.exports.card = async (req, res) => {
-  try {
+// module.exports.card = async (req, res) => {
+//   try {
 
 
-    let { filter, to, from } = req.body;
-    console.log(req.body + "req.body");
-    console.log(to + "to");
-    console.log(from + "from");
+//     let { filter, to, from } = req.body;
+//     console.log(req.body + "req.body");
+//     console.log(to + "to");
+//     console.log(from + "from");
 
-    let today = new Date().toISOString().split('T')[0]; // Get today's date
-    console.log(today);
-
-
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
-    yesterdayFormatted = yesterday.toISOString().split('T')[0]
-
-    // console.log(yesterday);
+//     let today = new Date().toISOString().split('T')[0]; // Get today's date
+//     console.log(today);
 
 
-    let sql1;
-    let sql2;
-    let sql3;
-    let sql4;
+//     const yesterday = new Date();
+//     yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
+//     yesterdayFormatted = yesterday.toISOString().split('T')[0]
 
-    if (filter == 1) {
-      //today
-      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1  AND DATE(created_on) = '${today}'`;
-      sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) ='${today}'`;
-      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND   DATE(created_on) ='${today}'`;
-      //  sql4 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND  DATE(created_on) ='${today}'`
-      sql4 = `SELECT 
-      CONCAT(
+//     // console.log(yesterday);
+
+
+//     let sql1;
+//     let sql2;
+//     let sql3;
+//     let sql4;
+
+//     if (filter == 1) {
+//       //today
+//       sql1 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1  AND DATE(created_on) = '${today}'`;
+//       sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) ='${today}'`;
+//       sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND   DATE(created_on) ='${today}'`;
+//       //  sql4 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND  DATE(created_on) ='${today}'`
+//       sql4 = `SELECT 
+//       CONCAT(
          
-          FORMAT(
-              (
-                  SELECT COALESCE(SUM(payin_charges), 0) 
-                  FROM tbl_merchant_transaction 
-                  WHERE status = 1 AND DATE(created_on) = '${today}'
-              ) 
-              +
-              (
-                  SELECT COALESCE(SUM(charges), 0) 
-                  FROM tbl_settlement 
-                  WHERE status = 1 AND DATE(created_on) = '${today}'
-              )
-              +
-              (
-                  SELECT COALESCE(SUM(akonto_charge), 0) 
-                  FROM tbl_icici_payout_transaction_response_details 
-                  WHERE status = 'SUCCESS' AND DATE(created_on) = '${today}'
-              ),
-              2
-          )
-      ) AS total_amount;
+//           FORMAT(
+//               (
+//                   SELECT COALESCE(SUM(payin_charges), 0) 
+//                   FROM tbl_merchant_transaction 
+//                   WHERE status = 1 AND DATE(created_on) = '${today}'
+//               ) 
+//               +
+//               (
+//                   SELECT COALESCE(SUM(charges), 0) 
+//                   FROM tbl_settlement 
+//                   WHERE status = 1 AND DATE(created_on) = '${today}'
+//               )
+//               +
+//               (
+//                   SELECT COALESCE(SUM(akonto_charge), 0) 
+//                   FROM tbl_icici_payout_transaction_response_details 
+//                   WHERE status = 'SUCCESS' AND DATE(created_on) = '${today}'
+//               ),
+//               2
+//           )
+//       ) AS total_amount;
   
-`;
+// `;
 
 
 
-    }
-    else if (filter == 2) {
-      //weekly
-      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
-      sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND   DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
-      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1   AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
-      // sql4 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
-      sql4 = `SELECT 
-      CONCAT(
-          FORMAT(
-              (
-                  SELECT COALESCE(SUM(payin_charges), 0) 
-                  FROM tbl_merchant_transaction 
-                  WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-              ) 
-              +
-              (
-                  SELECT COALESCE(SUM(charges), 0) 
-                  FROM tbl_settlement 
-                  WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-              )
-              +
-              (
-                  SELECT COALESCE(SUM(akonto_charge), 0) 
-                  FROM tbl_icici_payout_transaction_response_details 
-                  WHERE status = 'SUCCESS' AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-              ),
-              2
-          )
-      ) AS total_amount;
-  `
+//     }
+//     else if (filter == 2) {
+//       //weekly
+//       sql1 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+//       sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND   DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+//       sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1   AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+//       // sql4 = `SELECT FORMAT(COALESCE(SUM(ammount),0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 5 AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+//       sql4 = `SELECT 
+//       CONCAT(
+//           FORMAT(
+//               (
+//                   SELECT COALESCE(SUM(payin_charges), 0) 
+//                   FROM tbl_merchant_transaction 
+//                   WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+//               ) 
+//               +
+//               (
+//                   SELECT COALESCE(SUM(charges), 0) 
+//                   FROM tbl_settlement 
+//                   WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+//               )
+//               +
+//               (
+//                   SELECT COALESCE(SUM(akonto_charge), 0) 
+//                   FROM tbl_icici_payout_transaction_response_details 
+//                   WHERE status = 'SUCCESS' AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+//               ),
+//               2
+//           )
+//       ) AS total_amount;
+//   `
 
-    }
-    else if (filter == 3) {
-      //month
-      sql1 = `SELECT FORMAT (COALESCE(SUM(ammount),0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND  DATE(created_on) >=DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
-      sql2 = `SELECT FORMAT (COALESCE(SUM(amount),0),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
-      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1   AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+//     }
+//     else if (filter == 3) {
+//       //month
+//       sql1 = `SELECT FORMAT (COALESCE(SUM(ammount),0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND  DATE(created_on) >=DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+//       sql2 = `SELECT FORMAT (COALESCE(SUM(amount),0),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+//       sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1   AND DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
 
-      sql4 = `SELECT 
-      CONCAT(
-          FORMAT(
-              (
-                  SELECT COALESCE(SUM(payin_charges), 0) 
-                  FROM tbl_merchant_transaction 
-                  WHERE status = 1 AND   DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-              ) 
-              +
-              (
-                  SELECT COALESCE(SUM(charges), 0) 
-                  FROM tbl_settlement 
-                  WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-              )
-              +
-              (
-                  SELECT COALESCE(SUM(akonto_charge), 0) 
-                  FROM tbl_icici_payout_transaction_response_details 
-                  WHERE status = 'SUCCESS' AND DATE(created_on) >=  DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-              ),
-              2
-          )
-      ) AS total_amount;
-  `
+//       sql4 = `SELECT 
+//       CONCAT(
+//           FORMAT(
+//               (
+//                   SELECT COALESCE(SUM(payin_charges), 0) 
+//                   FROM tbl_merchant_transaction 
+//                   WHERE status = 1 AND   DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+//               ) 
+//               +
+//               (
+//                   SELECT COALESCE(SUM(charges), 0) 
+//                   FROM tbl_settlement 
+//                   WHERE status = 1 AND  DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+//               )
+//               +
+//               (
+//                   SELECT COALESCE(SUM(akonto_charge), 0) 
+//                   FROM tbl_icici_payout_transaction_response_details 
+//                   WHERE status = 'SUCCESS' AND DATE(created_on) >=  DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+//               ),
+//               2
+//           )
+//       ) AS total_amount;
+//   `
 
-    }
-    else if (to != null && from != null) {
-      //to too from
+//     }
+//     else if (to != null && from != null) {
+//       //to too from
 
 
-      sql1 =`SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount  FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'`;
+//       sql1 =`SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount  FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'`;
 
-      sql2 =` SELECT FORMAT (COALESCE(SUM(amount),0),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS'  AND  DATE(created_on)>= '${to}' AND DATE (created_on)<= '${from}'`;
-      sql3 = `SELECT FORMAT (COALESCE(SUM(requestedAmount),0),2) AS total_amount FROM tbl_settlement WHERE status = 1  AND  DATE(created_on) >= '${to}' AND DATE   (created_on)<= '${from}'`;
-      sql4=`SELECT 
-      CONCAT(
-          FORMAT(
-              (
-                  SELECT COALESCE(SUM(payin_charges), 0) 
-                  FROM tbl_merchant_transaction 
-                  WHERE status = 1 AND  DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'
-              ) 
-              +
-              (
-                  SELECT COALESCE(SUM(charges), 0) 
-                  FROM tbl_settlement 
-                  WHERE status = 1 AND DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'              )
-              +
-              (
-                  SELECT COALESCE(SUM(akonto_charge), 0) 
-                  FROM tbl_icici_payout_transaction_response_details 
-                  WHERE status = 'SUCCESS' AND DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'
-              ),
-              2
-          )
-      ) AS total_amount`;
+//       sql2 =` SELECT FORMAT (COALESCE(SUM(amount),0),2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS'  AND  DATE(created_on)>= '${to}' AND DATE (created_on)<= '${from}'`;
+//       sql3 = `SELECT FORMAT (COALESCE(SUM(requestedAmount),0),2) AS total_amount FROM tbl_settlement WHERE status = 1  AND  DATE(created_on) >= '${to}' AND DATE   (created_on)<= '${from}'`;
+//       sql4=`SELECT 
+//       CONCAT(
+//           FORMAT(
+//               (
+//                   SELECT COALESCE(SUM(payin_charges), 0) 
+//                   FROM tbl_merchant_transaction 
+//                   WHERE status = 1 AND  DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'
+//               ) 
+//               +
+//               (
+//                   SELECT COALESCE(SUM(charges), 0) 
+//                   FROM tbl_settlement 
+//                   WHERE status = 1 AND DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'              )
+//               +
+//               (
+//                   SELECT COALESCE(SUM(akonto_charge), 0) 
+//                   FROM tbl_icici_payout_transaction_response_details 
+//                   WHERE status = 'SUCCESS' AND DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'
+//               ),
+//               2
+//           )
+//       ) AS total_amount`;
    
-    }
+//     }
 
-    else {
-      //yesterday
-      sql1 = `SELECT FORMAT(COALESCE(SUM(ammount), 0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND   DATE(created_on) = '${yesterdayFormatted}'`;
-      sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND  DATE(created_on) ='${yesterdayFormatted}'`;
-      sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) ='${yesterdayFormatted}'`;
+//     else {
+//       //yesterday
+//       sql1 = `SELECT FORMAT(COALESCE(SUM(ammount), 0),2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND   DATE(created_on) = '${yesterdayFormatted}'`;
+//       sql2 = `SELECT FORMAT(COALESCE(SUM(amount),0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND  DATE(created_on) ='${yesterdayFormatted}'`;
+//       sql3 = `SELECT FORMAT(COALESCE(SUM(requestedAmount),0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) ='${yesterdayFormatted}'`;
 
-sql4=`SELECT 
-CONCAT(
+// sql4=`SELECT 
+// CONCAT(
     
-    FORMAT(
-        (
-            SELECT COALESCE(SUM(payin_charges), 0) 
-            FROM tbl_merchant_transaction 
-            WHERE status = 1 AND DATE(created_on) = '${yesterdayFormatted}'
-        ) 
-        +
-        (
-            SELECT COALESCE(SUM(charges), 0) 
-            FROM tbl_settlement 
-            WHERE status = 1 AND DATE(created_on) = '${yesterdayFormatted}'
-        )
-        +
-        (
-            SELECT COALESCE(SUM(akonto_charge), 0) 
-            FROM tbl_icici_payout_transaction_response_details 
-            WHERE status = 'SUCCESS' AND DATE(created_on) = '${yesterdayFormatted}'
-        ),
-        2
-    )
-) AS total_amount;
-`
+//     FORMAT(
+//         (
+//             SELECT COALESCE(SUM(payin_charges), 0) 
+//             FROM tbl_merchant_transaction 
+//             WHERE status = 1 AND DATE(created_on) = '${yesterdayFormatted}'
+//         ) 
+//         +
+//         (
+//             SELECT COALESCE(SUM(charges), 0) 
+//             FROM tbl_settlement 
+//             WHERE status = 1 AND DATE(created_on) = '${yesterdayFormatted}'
+//         )
+//         +
+//         (
+//             SELECT COALESCE(SUM(akonto_charge), 0) 
+//             FROM tbl_icici_payout_transaction_response_details 
+//             WHERE status = 'SUCCESS' AND DATE(created_on) = '${yesterdayFormatted}'
+//         ),
+//         2
+//     )
+// ) AS total_amount;
+// `
 
 
-    }
+//     }
 
-    const result1 = await mysqlcon(sql1);
-    const result2 = await mysqlcon(sql2);
-    const result3 = await mysqlcon(sql3);
-    const result4 = await mysqlcon(sql4)
-
-
-    // const amount1 = result1 ? result1 : 0;
-    // const amount2 = result2 ? result2 : 0;
-    // const amount3 = result3 ? result3 : 0;
-    // const amount4 = result4 ? result4 : 0;
+//     const result1 = await mysqlcon(sql1);
+//     const result2 = await mysqlcon(sql2);
+//     const result3 = await mysqlcon(sql3);
+//     const result4 = await mysqlcon(sql4)
 
 
+//     // const amount1 = result1 ? result1 : 0;
+//     // const amount2 = result2 ? result2 : 0;
+//     // const amount3 = result3 ? result3 : 0;
+//     // const amount4 = result4 ? result4 : 0;
 
-    if (result1 && result2 && result3 && result4) {
-      return res.status(200).json({
 
 
-        message: "Amount Fetch Successfully ",
-        Deposite: result1[0].total_amount,
-        Payouts: result2[0].total_amount,
-        Settlements: result3[0].total_amount,
-        Commission: result4[0].total_amount,
-      })
-    }
-    else {
-      return res.status(400).json({
-        "message": "Error while fetching data"
-      })
-    }
+//     if (result1 && result2 && result3 && result4) {
+//       return res.status(200).json({
 
-  } catch (err) {
-    console.log(err);
-    return res.status(404).json({
-      message: err,
-    })
-  }
-}
+
+//         message: "Amount Fetch Successfully ",
+//         Deposite: result1[0].total_amount,
+//         Payouts: result2[0].total_amount,
+//         Settlements: result3[0].total_amount,
+//         Commission: result4[0].total_amount,
+//       })
+//     }
+//     else {
+//       return res.status(400).json({
+//         "message": "Error while fetching data"
+//       })
+//     }
+
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(404).json({
+//       message: err,
+//     })
+//   }
+// }
 
 
 
@@ -2140,68 +2136,122 @@ module.exports.decodeToken = async (req, res) => {
 // Example usage:
 
 
-module.exports.card = async (req, res) => {
-  try {
-    const { filter, to, from } = req.body;
+// module.exports.card = async (req, res) => {
+//   try {
+//     const { filter, to, from } = req.body;
 
-    let startDate, endDate;
+//     let startDate, endDate;
 
-    if (filter == 1) {
-      // Today
-      startDate = endDate = new Date().toISOString().split('T')[0];
-    } else if (filter == 2) {
-      // Past week
-      startDate = new Date();
-      startDate.setDate(startDate.getDate() - 6); // Start date of the past week (last 7 days)
-      startDate = startDate.toISOString().split('T')[0];
-      endDate = new Date().toISOString().split('T')[0];
-    } else if (filter == 3) {
-      // Past month
-      startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - 1); // Start date of the past month
-      startDate = startDate.toISOString().split('T')[0];
-      endDate = new Date().toISOString().split('T')[0];
-    } else if (to && from) {
-      // Custom date range provided
-      startDate = to;
-      endDate = from;
-    } else {
-      // Default to yesterday
-      startDate = endDate = new Date();
-      startDate.setDate(startDate.getDate() - 1);
-      startDate = endDate = startDate.toISOString().split('T')[0];
-    }
+//     if (filter == 1) {
+//       // Today
+//       startDate = endDate = new Date().toISOString().split('T')[0];
+//     } else if (filter == 2) {
+//       // Past week
+//       startDate = new Date();
+//       startDate.setDate(startDate.getDate() - 6); // Start date of the past week (last 7 days)
+//       startDate = startDate.toISOString().split('T')[0];
+//       endDate = new Date().toISOString().split('T')[0];
+//     } else if (filter == 3) {
+//       // Past month
+//       startDate = new Date();
+//       startDate.setMonth(startDate.getMonth() - 1); // Start date of the past month
+//       startDate = startDate.toISOString().split('T')[0];
+//       endDate = new Date().toISOString().split('T')[0];
+//     } else if (to && from) {
+//       // Custom date range provided
+//       startDate = to;
+//       endDate = from;
+//     } else {
+//       // Default to yesterday
+//       startDate = endDate = new Date();
+//       startDate.setDate(startDate.getDate() - 1);
+//       startDate = endDate = startDate.toISOString().split('T')[0];
+//     }
 
-    const queries = [
-      `SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
+//     const queries = [
+//       `SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
       
-      `SELECT FORMAT(COALESCE(SUM(amount), 0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
+//       `SELECT FORMAT(COALESCE(SUM(amount), 0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
      
-      `SELECT FORMAT(COALESCE(SUM(requestedAmount), 0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
+//       `SELECT FORMAT(COALESCE(SUM(requestedAmount), 0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'`,
      
-      `SELECT CONCAT(FORMAT((SELECT COALESCE(SUM(payin_charges), 0) FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}') + (SELECT COALESCE(SUM(charges), 0) FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}') + (SELECT COALESCE(SUM(akonto_charge), 0) FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'), 2)) AS total_amount`
+//       `SELECT CONCAT(FORMAT((SELECT COALESCE(SUM(payin_charges), 0) FROM tbl_merchant_transaction WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}') + (SELECT COALESCE(SUM(charges), 0) FROM tbl_settlement WHERE status = 1 AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}') + (SELECT COALESCE(SUM(akonto_charge), 0) FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND DATE(created_on) >= '${startDate}' AND DATE(created_on) <= '${endDate}'), 2)) AS total_amount`
 
 
       
    
     
     
+//     ];
+
+//     const [result1, result2, result3,result4] = await Promise.all(queries.map(sql => mysqlcon(sql)));
+
+//     if (result1 && result2 && result3 && result4) {
+//       return res.status(200).json({
+//         message: "Amounts fetched successfully",
+//         Deposits: result1[0].total_amount,
+//         Payouts: result2[0].total_amount,
+//         Settlements: result3[0].total_amount,
+//         Commission: result4[0].total_amount
+//       });
+//     } else {
+//       return res.status(400).json({
+//         message: "Error while fetching data"
+        
+//       });
+//     }
+
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({
+//       message: "Internal server error"
+//     });
+//   }
+// }
+
+module.exports.card = async (req, res) => {
+  try {
+    const { filter, to, from } = req.body;
+
+    let dateCondition = '';
+
+    if (filter == 1) {
+      // Today
+      dateCondition = `DATE(created_on) = CURDATE()`;
+    } else if (filter == 2) {
+      // Past week
+      dateCondition = `DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)`;
+    } else if (filter == 3) {
+      // Past month
+      dateCondition = `DATE(created_on) >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)`;
+    } else if (to && from) {
+      // Custom date range provided
+      dateCondition = `DATE(created_on) >= '${to}' AND DATE(created_on) <= '${from}'`;
+    } else {
+      // Default to yesterday
+      dateCondition = `DATE(created_on) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)`;
+    }
+
+    const queries = [
+      `SELECT FORMAT(COALESCE(SUM(ammount), 0), 2) AS total_amount FROM tbl_merchant_transaction WHERE status = 1 AND ${dateCondition}`,
+      `SELECT FORMAT(COALESCE(SUM(amount), 0), 2) AS total_amount FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND ${dateCondition}`,
+      `SELECT FORMAT(COALESCE(SUM(requestedAmount), 0), 2) AS total_amount FROM tbl_settlement WHERE status = 1 AND ${dateCondition}`,
+      `SELECT CONCAT(FORMAT((SELECT COALESCE(SUM(payin_charges), 0) FROM tbl_merchant_transaction WHERE status = 1 AND ${dateCondition}) + (SELECT COALESCE(SUM(charges), 0) FROM tbl_settlement WHERE status = 1 AND ${dateCondition}) + (SELECT COALESCE(SUM(akonto_charge), 0) FROM tbl_icici_payout_transaction_response_details WHERE status = 'SUCCESS' AND ${dateCondition}), 2)) AS total_amount`
     ];
 
-    const [result1, result2, result3,result4] = await Promise.all(queries.map(sql => mysqlcon(sql)));
+    const results = await Promise.all(queries.map(sql => mysqlcon(sql)));
 
-    if (result1 && result2 && result3 && result4) {
+    if (results.every(result => result && result[0])) {
       return res.status(200).json({
         message: "Amounts fetched successfully",
-        Deposits: result1[0].total_amount,
-        Payouts: result2[0].total_amount,
-        Settlements: result3[0].total_amount,
-        Commission: result4[0].total_amount
+        Deposits: results[0][0].total_amount,
+        Payouts: results[1][0].total_amount,
+        Settlements: results[2][0].total_amount,
+        Commission: results[3][0].total_amount
       });
     } else {
       return res.status(400).json({
         message: "Error while fetching data"
-        
       });
     }
 
@@ -2212,3 +2262,6 @@ module.exports.card = async (req, res) => {
     });
   }
 }
+
+
+

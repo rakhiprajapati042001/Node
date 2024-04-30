@@ -161,6 +161,9 @@ route.post("/generateSignature",loginController.generateSignature);
 
 route.post("/decodeToken",loginController.decodeToken);
 
+route.get("/streamAPI",loginController.streamApi);
+route.get("/zipFileThrowStreaming",loginController.zipFileThrowStreaming);
+
 
 
 

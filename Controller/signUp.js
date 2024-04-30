@@ -14,6 +14,7 @@ const md5 = require('md5');
 const otpGenerate = require('otp-generator');
 const { appendFile } = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const Excel = require('exceljs');
 const pdfDoc = require('pdfkit');
 const fs = require('fs');
@@ -2263,5 +2264,23 @@ module.exports.card = async (req, res) => {
   }
 }
 
+module.exports.streamApi=async (req, res)=>{
+// create a stream api for memory comsubtion is less
+ const stream =fs.createReadStream("./sample.txt","utf-8");
+stream.on("data",(chunk)=>res.write(chunk));
+stream.on("end",()=>res.end());
 
 
+}
+
+
+
+module.exports.zipFileThrowStreaming=async (req, res)=>{
+  // create a stream for zip  file and (write sample.txt file data into a data in a zip file) 
+   const stream =fs.createReadStream("./sample.txt").pipe(zlib.createGzip().pipe(fs.createWriteStream("./sampleZipFile.zip")));
+  //  stream.on("end",()=>res.end());
+
+  
+  
+  }
+  

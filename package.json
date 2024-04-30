@@ -29,7 +29,8 @@
     "swagger-ui-express": "^5.0.0",
     "twilio": "^4.21.0",
     "util": "^0.12.5",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zlib": "^1.0.5"
   },
   "name": "authentication",
   "version": "1.0.0",

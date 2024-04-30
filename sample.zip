@@ -1,0 +1,1 @@
+This method is similar to Array.prototype.every and calls fn on each chunk in the stream to check if all awaited return values are truthy value for fn. Once an fn call on a chunk awaited return value is falsy, the stream is destroyed and the promise is fulfilled with false. If all of the fn calls on the chunks return a truthy value, the promise is fulfilled with true.

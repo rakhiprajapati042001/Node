@@ -17,11 +17,12 @@ const path = require('path');
 const zlib = require('zlib');
 const Excel = require('exceljs');
 const pdfDoc = require('pdfkit');
+// const assert = require('assert');
 const fs = require('fs');
 const xlsx = require('xlsx');
 const multer = require("multer");
 const { log } = require('console');
-const crypto = require('crypto');
+// const crypto = require('crypto');
 
 dotenv.config();
 
@@ -2284,3 +2285,231 @@ module.exports.zipFileThrowStreaming=async (req, res)=>{
   
   }
   
+
+//   async uploadDocument(req, res){
+//     // console.log("req.body",req.body)
+//     console.log("req.body",req.user.id)
+
+//     const id = req.user.id;
+    
+//     const email = req.user.email;
+//     let filterType = req.body.filterType ? Number(req.body.filterType) : 1 ; req.body.filterType ? Number(req.body.filterType) : 2 ;req.body.filterType ? Number(req.body.filterType) : 3 ;req.body.filterType ? Number(req.body.filterType) : 4 ; req.body.filterType ? Number(req.body.filterType) : '';
+//     console.log(req.body.filterType)
+//     const transporter = nodemailer.createTransport({
+//       service: 'gmail',
+//       auth: {
+//         user: "kr.manjeet319@gmail.com",
+//         pass: "mfvadlyccsgukabu",
+//       }
+//     });
+  
+//     const mailOptions = {
+//       from: "kr.manjeet319@gmail.com",
+//       to: email,
+//       subject: 'Send Attachament',
+//       html: '<h1>Hello, This is Attachanment !!</h1><p>This is test mail..!</p>',
+//       attachments: [
+//         {
+//           filename: req.files.image[0].originalname, 
+//           path : filepath+"/"+ req.files.image[0].originalname
+//         },
+//         {
+//           filename: req.files.image1[0].originalname, 
+//           path : filepath+"/"+ req.files.image1[0].originalname
+//         },
+//         {
+//           filename: req.files.image2[0].originalname, 
+//           path :  filepath +"/"+ req.files.image2[0].originalname
+//         },
+//         {
+//           filename: req.files.image3[0].originalname, 
+//           path :  filepath +"/"+ req.files.image3[0].originalname
+//         }
+//       ]
+//     }
+    
+//     var llp = {
+//       merchant_id : id,
+//       llp_business_identity : req.files.image[0].originalname,
+//       llp_business_existence : req.files.image1[0].originalname,
+//       llp_business_owners : req.files.image2[0].originalname,
+//       llp_business_working : req.files.image3[0].originalname,
+//     }
+    
+//     let prtnr = {
+//       merchant_id : id,
+//       prtnr_business_identity : req.files.image[0].originalname,	
+//       prtnr_business_existence : req.files.image1[0].originalname,
+//       prtnr_business_working : req.files.image2[0].originalname,
+//       prtnr_business_owners : req.files.image3[0].originalname
+//     }
+  
+//     let sole = {
+//       merchant_id : id,
+//       sole_business_identity : req.files.image[0].originalname,	
+//       sole_business_existence : req.files.image1[0].originalname,
+//       sole_business_working : req.files.image2[0].originalname,
+//       sole_business_owners : req.files.image3[0].originalname
+//     }
+  
+//     let ngo =  {
+//       merchant_id : id,
+//       ngo_business_identity : req.files.image[0].originalname ,
+//       ngo_business_existence : req.files.image1[0].originalname,	
+//       ngo_business_working : req.files.image2[0].originalname,
+//       ngo_business_owners : req.files.image3[0].originalname
+//     }
+//     let setNull = {
+//       llp_business_identity : null,
+//       llp_business_existence : null,
+//       llp_business_owners : null,
+//       llp_business_working : null,
+//       prtnr_business_identity : null,	
+//       prtnr_business_existence : null,
+//       prtnr_business_working : null,
+//       prtnr_business_owners : null,
+//       sole_business_identity : null,	
+//       sole_business_existence : null,
+//       sole_business_working : null,
+//       sole_business_owners : null,
+//       ngo_business_identity : null,
+//       ngo_business_existence : null,	
+//       ngo_business_working : null,
+//       ngo_business_owners : null
+//     }
+//     try {
+//       let sql = "SELECT kyc_type from tbl_user WHERE id = ?";
+//       let result = await mysqlcon(sql,[id])
+//       console.log(result,"result");
+//       console.log(result.kyc_type,"oooooooo");
+//       let test = result[0].kyc_type
+
+//       if(test != 0){    
+// let doc1 = ${test}+"_business_identity"
+// let doc2 = ${test}+"_business_existence"
+// let doc3 = ${test}+"_business_owners"
+// let doc4 = ${test}+"_business_working"
+
+// let selectDocSql = SELECT ${doc1},${doc2},${doc3},${doc4} from kyc_document WHERE merchant_id = ?;
+// let selectDocResult = await mysqlcon(selectDocSql,[id])
+// let values = selectDocResult.map(doc => Object.values(doc));
+// console.log(values[0])
+
+// values.map((item)=>{
+//   if (fs.existsSync(${filepath}/${item})) {
+//     fs.unlinkSync(${filepath}/${item});
+//   } else {
+//     console.error(File ${item} does not exist.);
+//   }
+// })
+//         let setNullSql = "UPDATE kyc_document SET ?,created_on = now(),modified_on = now() WHERE merchant_id = ?";
+//         let result = await mysqlcon(setNullSql,[setNull,id])
+//         let setKycTypeSql = "UPDATE tbl_user SET kyc_type=? WHERE id = ?"
+//         var insertSql = "UPDATE kyc_document SET ?, created_on = now(), modified_on = now() WHERE merchant_id = ?"
+
+
+//         if(filterType == 1){
+//           let result = await mysqlcon(insertSql,[llp, id])
+//           let results = await mysqlcon(setKycTypeSql,["llp",id])
+//         }else if(filterType == 2){
+//           let result = await mysqlcon(insertSql,[prtnr, id])
+//           let results = await mysqlcon(setKycTypeSql,["prtnr",id])
+//         }else if(filterType == 3){
+//           let result = await mysqlcon(insertSql,[sole, id])
+//           let results = await mysqlcon(setKycTypeSql,["sole",id]) 
+//         }else if(filterType == 4){
+//           let result = await mysqlcon(insertSql,[ngo, id])
+//           let results = await mysqlcon(setKycTypeSql,["ngo",id])
+//         }
+//         transporter.sendMail(mailOptions, function(error, info){
+//           if (error){
+//             console.log(error)
+//             res.status(200).json({
+//               message : "error",
+//             })
+//           } else {
+//             res.status(200).json({
+//               message : "Documents Uploaded",
+//             });
+//           }
+//         });
+//       } else {
+//         let sql = "INSERT INTO kyc_document SET ?, created_on = now(), modified_on = now()"
+//         let userSql = "UPDATE tbl_user SET kyc_type = ? WHERE id = ?"
+//         if(filterType === 1){
+//         let result = await mysqlcon(sql,[llp])
+//         let result1 = await mysqlcon(userSql, ["llp",id])
+//         transporter.sendMail(mailOptions, function(error, info){
+//           if (error){
+//             console.log(error)
+//             res.status(200).json({
+//               message : "error",
+//             })
+//           } else {
+//             res.status(200).json({
+//               message : "Documents Uploaded",
+//               result1
+//             });
+//           }
+//         });
+
+//         }else if(filterType === 2){
+//         let result = await mysqlcon(sql,[prtnr])
+//         let result1 = await mysqlcon(userSql, ["prtnr",id])     
+//         transporter.sendMail(mailOptions, function(error, info){
+//           if (error){
+//             console.log(error)
+//             res.status(200).json({
+//               message : "error",
+//             })
+//           } else {
+//             res.status(200).json({
+//               message : "Documents Uploaded",
+//             });
+//           }
+//         });
+
+//         }else if(filterType === 3){
+//         let result = await mysqlcon(sql,[sole])
+//         let result1 = await mysqlcon(userSql, ["sole",id])
+//         transporter.sendMail(mailOptions, function(error, info){
+//           if (error){
+//             console.log(error)
+//             res.status(200).json({
+//               message : "error",
+//             })
+//           } else {
+//             res.status(200).json({
+//               message : "Documents Uploaded",
+//             });
+//           }
+//         });
+        
+//         }else if(filterType === 4){
+//           let result = await mysqlcon(sql,[ngo])
+//           let result1 = await mysqlcon(userSql, ["ngo",id])
+              
+//             transporter.sendMail(mailOptions, function(error, info){
+//             if (error){
+//               console.log(error)
+//               res.status(200).json({
+//                 message : "error",
+//               })
+//             } else {
+//               res.status(200).json({
+//                 message : "Documents Uploaded",
+//               });
+//             }
+//           });
+//         }
+//       }
+//     } catch (error) {
+//       console.log(error)
+//       return res.json(500,{
+//         message : 'error',
+//         error :error
+//       })
+//     }
+//   }
+
+

@@ -3,7 +3,7 @@
 const route=require("express").Router();
 const loginController=require("../Controller/signUp");
 const authMiddleware=require('../configuration/middleware/authMiddleware')
-
+const authSessionMiddleware=require('../configuration/middleware/sessionMiddleware')
 
 const multer = require("multer");
 var storage = multer.diskStorage({
@@ -164,7 +164,8 @@ route.post("/decodeToken",loginController.decodeToken);
 route.get("/streamAPI",loginController.streamApi);
 route.get("/zipFileThrowStreaming",loginController.zipFileThrowStreaming);
 
+route.post("/loginSession",loginController.loginSession);
 
-
+route.post("/registerUser",loginController.registerUser);
 
 module.exports=route;

@@ -2,6 +2,8 @@ const express = require('express');
 const router=require("express").Router();
 
 const app = express();
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 const config=require('./configuration/config.js');
 const PORT= process.env.PORT ||9000;
 const path=require('path');
@@ -18,6 +20,14 @@ app.use(express.json())
 
 //mounted the router
 app.use(require('./Router/router.js'))
+
+
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // set to true in production when using HTTPS
+}));
 
 /* URL of Swagger use
 http://localhost:9990/api-docs/ */

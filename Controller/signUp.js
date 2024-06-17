@@ -23,11 +23,13 @@ const xlsx = require('xlsx');
 const multer = require("multer");
 const { log } = require('console');
 // const crypto = require('crypto');
-
+const bcrypt = require('bcryptjs');
 dotenv.config();
 
 const storage = multer.memoryStorage();
 const uploads = multer({ storage: storage });
+
+
 
 module.exports.excelExport = async function (req, res) {
 
@@ -72,44 +74,9 @@ module.exports.excelExport = async function (req, res) {
 }
 
 
-module.exports.pdfDownload = async function (req, res) {
-
-  try {
-    let sql = "SELECT * FROM module"
-    let dataSet = await mysqlcon(sql);
-
-    const doc = new pdfDoc();
+module.exports.pdfDownload = 
 
 
-    dataSet.forEach((row) => {
-      doc.text(JSON.stringify(row));
-    });
-
-    const filePath = 'data.pdf';
-
-    const outputStream = fs.createWriteStream(filePath);
-    console.log(outputStream + "outputStream");
-    doc.pipe(outputStream)
-    // Finalize the PDF document
-    doc.end();
-    console.log('PDF created successfully');
-
-    res.download(filePath, 'data.pdf', (err) => {
-      if (err) {
-        console.error('Error downloading file:', err);
-        res.status(500).send('Internal Server Error');
-        return;
-      }
-    })
-
-  } catch (error) {
-    console.log(error);
-    res.status(500)
-      .json({ status: false, message: "Error to complete task." });
-  }
-
-
-}
 
 module.exports.signUP = async function (req, res) {
   try {
@@ -2512,4 +2479,68 @@ module.exports.zipFileThrowStreaming=async (req, res)=>{
 //     }
 //   }
 
+
+
+module.exports.loginSession = async (req, res) => {
+
+  try {
+    const { email, password } = req.body;
+    const sql = 'SELECT * FROM users WHERE email = ?';
+    var results = await mysqlcon(sql, email);
+    // if (err) {
+    //   res.status(500).send('Error logging in');
+    //   return;
+    // }
+    if (results.length === 0) {
+      res.status(400).send('User not found');
+      return;
+    }
+    const user = results[0];
+    // console.log(user);
+    const match = await bcrypt.compare(password, user.password);
+    if (match) {
+      req.session.user = user;
+      // console.log(req.session.user);
+
+      res.status(200).send('Login successful');
+    } else {
+      res.status(400).send('Incorrect password');
+    }
+  }
+ catch (err) {
+    console.log(err);
+    return res.status(201).json({ error: err });
+  }
+
+}
+
+
+// Register a new user
+module.exports.registerUser = async (req, res) => {
+  try{
+
+    const data= req.body;
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    console.log(hashedPassword,"hashedPassword");
+    var user_data = {
+      name: data.name,
+      email: data.email,
+      password: hashedPassword,
+     
+    };
+  
+    sql = "INSERT INTO users SET ?";
+    var response = await mysqlcon(sql, [user_data]);
+    console.log(response,"response");
+      if (response) {
+   
+        res.status(201).send(`User registered with ID: ${response.insertId}`);
+        return;
+      }
+      res.status(500).send('Error registering user');
+    
+  }catch(err){
+    console.log(err);
+    return res.status(201).json({ error: err });
+  }}
 

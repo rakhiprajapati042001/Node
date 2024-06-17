@@ -4,7 +4,8 @@ const config = {
     DB_USERNAME: "root",
     DB_PASSWORD: "",
     // DB_NAME: "ubankconnect",
-    DB_NAME: "bankconnect",
+    // DB_NAME: "bankconnect",
+    DB_NAME: "blogging",
 
   
     // JWT DATA

@@ -6,6 +6,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const config=require('./configuration/config.js');
 const PORT= process.env.PORT ||9000;
+const cors=require('cors')
 const path=require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -17,7 +18,8 @@ app.use(express.urlencoded())
 
 //use build in middleware which is define by express(globally use for all application all routes)
 app.use(express.json())
-
+// app.use(cors({origin:["http:localhost:3000","http:localhost:3001"]}))
+app.use(cors())
 //mounted the router
 app.use(require('./Router/router.js'))
 
@@ -93,6 +95,7 @@ app.listen(PORT, (req, res) =>{
 
   
     console.log('http://' + config.DB_HOST + ':' + PORT);
+    
 });
 
 

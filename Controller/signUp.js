@@ -96,7 +96,7 @@ module.exports.signUP = async function (req, res) {
         res.status(201).json({
           status: false,
           message: "Enter UserName",
-          data: [],
+          data: ""
         });
         return true;
       } if (data.userEmail && emailvalidator.validate(data.userEmail)) {

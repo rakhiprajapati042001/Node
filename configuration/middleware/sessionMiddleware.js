@@ -2,10 +2,7 @@
 
 const isAuthenticated = async (req, res, next) => {
     try {
-        console.log("-------------------");
-        
-    
-        if (req.session.user) {
+           if (req.session.user) {
             console.log("kjhgfdsa");
             return next();
         } else {

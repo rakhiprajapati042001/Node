@@ -6,6 +6,8 @@ const config=require('../config')
 
 const authMiddleware = async(req,res,next)=>{
     try {
+
+        
         const {authorization} = req.headers
         if(!authorization)return res.status(404).json({message:"JWT Not Found💀"})
         const Token = authorization.replace('Bearer ','')

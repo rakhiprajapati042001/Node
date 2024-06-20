@@ -1921,7 +1921,7 @@ module.exports.generateSignature = async (req, res) => {
     if (signature) {
 
       console.log('Generated Signature:', signature);
-      return res.status(400).json({
+      return res.status(200).json({
         "message": " fetching Signature",
         "signature": signature
       })

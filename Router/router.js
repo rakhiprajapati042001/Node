@@ -167,5 +167,13 @@ route.get("/zipFileThrowStreaming",loginController.zipFileThrowStreaming);
 route.post("/loginSession",loginController.loginSession);
 
 route.post("/registerUser",loginController.registerUser);
+route.post("/customerDetails",loginController.customerDetails);
+route.post("/creditNumbermasked",loginController.creditNumbermasked);
+
+route.post("/customerDecriptDetails",loginController.customerDecriptDetails);
+
+
+
+
 
 module.exports=route;

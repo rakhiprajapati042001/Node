@@ -24,9 +24,13 @@ const multer = require("multer");
 const { log } = require('console');
 // const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const  maskdata=require('maskdata')
 dotenv.config();
-
+const CryptoJS=require('crypto-js')
+//  import * as masked from "masked-credit-card-number";
+const masked =require('masked-credit-card-number')
 const storage = multer.memoryStorage();
+const json=require('json')
 const uploads = multer({ storage: storage });
 
 
@@ -2543,4 +2547,140 @@ module.exports.registerUser = async (req, res) => {
     console.log(err);
     return res.status(201).json({ error: err });
   }}
+
+ // Assuming you have already set up your Express app and imported necessary modules
+
+// Define your API endpoint
+function encryptData(data, encryptionKey) {
+  return CryptoJS.AES.encrypt(JSON.stringify(data), encryptionKey).toString();
+}
+
+// Function to decrypt sensitive data
+function decryptData(encryptedData, encryptionKey) {
+  const bytes = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
+  const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+  // console.log(decryptedData,"decryptedDatadecryptedDatadecryptedDatadecryptedDatadecryptedData");
+
+  return decryptedData;
+}
+module.exports.customerDetails = async (req, res) => {
+  try {
+    // Extract data from the request body
+    const data = req.body;
+    const ENCRYPTION_KEY = 'ubankconnect';
+    // Construct the user data object
+    const user_data = {
+      userName: data.name, // Assuming 'name' is the field to be inserted into 'tbl_signup'
+      city: data.city,
+      country: data.country,
+      amount:data.amount,
+      cardNumber:masked(data.cardNumber)
+      
+    };
+
+    // Convert the user data into an array with a single object (if needed)
+    const result = [user_data];
+   
+ 
+    res.json(result);
+
+    // Insert into MySQL database
+    const sql = 'INSERT INTO tbl_signup (userName) VALUES (?)';
+    const jsonData = JSON.stringify(result);
+    // const values = [res.json.stringify(result)]; // Adjust for other fields as needed
+    const encryptedCardNumber = encryptData(result, ENCRYPTION_KEY);
+    console.log('Encrypted Data:', JSON.stringify(encryptedCardNumber));
+    // Call mysqlcon function to execute the query
+    const insertionResult = await mysqlcon(sql, JSON.stringify(encryptedCardNumber));
+console.log(encryptedCardNumber,'encryptedCardNumber-------------------');
+    const decryptedCardNumber = decryptData(encryptedCardNumber, ENCRYPTION_KEY);
+
+    // Log the decrypted data
+    console.log('Decrypted Card Number:', decryptedCardNumber);
+   
+    console.log('Inserted ID:', insertionResult.insertId); // Log the ID of the inserted row
+
+  } catch (err) {
+    console.error(err);
+    // Handle errors appropriately
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+
+
+
+module.exports.creditNumbermasked = async (req, res) => {
+  try {
+    const { cardNumber } = req.body; // Assuming req.body contains the credit card number as a string
+
+    // Check if the cardNumber is a valid string and has at least 9 characters (4 start + 4 end + 1 unmasked)
+    if (typeof cardNumber !== 'string' || cardNumber.length ==12) {
+      return res.status(400).json({ error: 'Invalid credit card number' });
+    }
+
+    //first typpe
+    masked(cardNumber);
+    console.log(masked(cardNumber));
+    let sql = "INSERT INTO carddetails (cardNumber) VALUES (?)";
+    let data = await mysqlcon(sql, [masked(cardNumber)]);
+
+    //second type
+    // const maskedCardNumber = cardNumber.substring(0, 4) + '*'.repeat(cardNumber.length - 8) + cardNumber.substring(cardNumber.length - 4);
+
+    // console.log("Masked card number:", maskedCardNumber);
+
+    // let sql = "INSERT INTO carddetails (cardNumber) VALUES (?)";
+    // let data = await mysqlcon(sql, [maskedCardNumber]);
+
+    // Check if data was successfully inserted
+    if (data.affectedRows > 0) {
+      console.log('Saved successfully');
+      res.status(200).json({ message: 'Saved successfully' });
+    } else {
+      console.log('Something went wrong');
+      res.status(500).json({ error: 'Failed to save data' });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+ 
+
+module.exports.customerDecriptDetails = async (req, res) => {
+  try {
+    // Extract data from the request body (assuming req.body contains id)
+    const { id } = req.body;
+    const ENCRYPTION_KEY = 'ubankconnect'; // Replace with your actual encryption key (should be securely stored)
+
+    // Fetch encrypted data from MySQL
+    const sql = 'SELECT userName FROM tbl_signup WHERE id = ?';
+    const result = await mysqlcon(sql, [id]);
+
+    // Check if result is empty
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Record not found' });
+    }
+
+    // Assuming userName is encrypted, extract and decrypt it
+    const encryptedUserName = result[0].userName;
+    console.log(encryptedUserName,'encryptedUserName');
+    const decryptedUserName = decryptData(encryptedUserName, ENCRYPTION_KEY);
+
+    // Log decrypted data (for demonstration)
+    console.log('Decrypted User Name:', decryptedUserName);
+
+    // Send decrypted data as JSON response
+    res.json({ decryptedUserName });
+
+  } catch (err) {
+    console.error(err);
+    // Handle errors appropriately
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 

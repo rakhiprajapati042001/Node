@@ -2,15 +2,15 @@ import axios from 'axios';
 import React, { useState } from 'react';
 
 const Information = () => {
-  const [responseData, setResponseData] = useState(null);
-  const [error, setError] = useState(null);
+  const [responseData, setResponseData] = useState('');
+  const [error, setError] = useState('');
 
   const onClick = async (e) => {
     e.preventDefault();
 
     try {
       const response = await axios.post('http://localhost:9000/generateSignature');
-      console.log('Response Data:', response.data);
+      // console.log('Response Data:', response.data);
       setResponseData(response.data); // Store response data in state
       setError(null); // Clear any previous errors
     } catch (error) {
